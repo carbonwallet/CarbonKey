@@ -42,24 +42,18 @@ To backup your CarbonKey write down the twelve word backup text on the backup pa
 2. Tethering. CarbonKey creates a HD wallet on ititialisation and sends an xpub key when requested.
 3. Transaction signing. Inputs are retrieved from the wallet provider and signed via the HD wallet.
 
-# Debugging
+# Architecture
 
-From the browser console the following are useful.
+CarbonKey is purposely designed to have minimal dependencies and does not have a build process. The app is deloyed from our website or your own as a Progressive Web App (PWA). https://en.wikipedia.org/wiki/Progressive_web_app
 
-injector = angular.element(document.body).injector()
+# Notes for currencies looking to partner with CarbonWallet
 
-onchain = injector.get('onChainService')
+CarbonKey was designed to be deployed easily by 3rd parties especially crypto currencies looking to partner with CarbonWallet. Crypto currency maintainers should audit the code and deploy under their own infrastructure.
 
-bitid = injector.get('bitIDService')
+This means that as a provider we are unable to touch your users keys even if our supply chain is completely compromised.
 
-You can then call the various methods on the services.
+Let us do the job of onboarding customers and getting them familiar with multi signature wallets. You can feel safe knowing you can recommend to your currency holders an easy and safe way to store their crypto and invest in your technology.
 
-Test BIT ID
 
-var succ = function(data) { alert('Success ' + data) };
-var fail = function(data) { alert(data) };
-uri = 'bitid://carbonwallet.com/bitid_callback?x=9c70553e8d982e22'
-bitid.setAddress(uri)
-bitid.authorize(window.localStorage.getItem("wif"), succ, fail);
 
 
