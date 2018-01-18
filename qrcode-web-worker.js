@@ -49,7 +49,6 @@ function process(input) {
         console.log(result.result);
 
     } catch (e) { 
-      console.log(e);
       result.error = e 
     }
 
