@@ -36,7 +36,7 @@ The private key never leaves CarbonKey.
 To backup your CarbonKey write down the twelve word backup text on the backup page.
 
 
-# How does CarbonKey work (More Technical)?
+# How does CarbonKey work? (More Technical)
 
 1. Registration and login are performed with the BitID protocol. https://github.com/bitid/bitid
 2. Tethering. CarbonKey creates a HD wallet on ititialisation and sends an xpub key when requested.
