@@ -21,6 +21,27 @@ CarbonKey is designed to take advantage of the multi signature infrastructure in
 
 Currently CarbonWallet https://carbonwallet.com is the only wallet supporting multi signature wallets secured with CarbonKey.
 
+# How does CarbonKey work?
+
+All actions within CarbonKey are triggered by scanning a QR code. 
+
+There are 3 main actions.
+
+1. Registration and Login. Scan the QR code on a supporting site to register or login. No need to type passwords anymore. Your credentials are air gapped making them harder to steal.
+2. Tethering. The wallet provider gets you to scan another QR code. This is a one time operation. CarbonKey will send a public key that the wallet provider can use to setup your wallet.
+3. Transaction Signing. When you want to send out a payment the wallet provider with create another QR code for you to scan. CarbonKey with sign the transactions and your coins are released.
+
+The private key never leaves CarbonKey.
+
+To backup your CarbonKey write down the twelve word backup text on the backup page.
+
+
+# How does CarbonKey work (More Technical)?
+
+1. Registration and login are performed with the BitID protocol. https://github.com/bitid/bitid
+2. Tethering. CarbonKey creates a HD wallet on ititialisation and sends an xpub key when requested.
+3. Transaction signing. Inputs are retrieved from the wallet provider and signed via the HD wallet.
+
 # Debugging
 
 From the browser console the following are useful.
