@@ -1,0 +1,150 @@
+#scans {
+	color: #ccc;
+	text-align: center;
+}
+
+#snapshotLimitOverlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+
+    width: 80vmin;
+    height: 80vmin;
+
+    transform: translateX(-50%) translateY(-50%);
+
+    text-align: center;
+}
+
+#snapshotLimitOverlay:after {
+    content:'';
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.4);
+}
+
+video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+
+    width: 80vmin;
+    height: 80vmin;
+
+    transform: translateX(-50%) translateY(-50%);
+
+    text-align: center;
+}
+
+#qr-canvas {
+    display: none;
+}
+
+/* Push menu. */
+.navbar-push {
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+@media screen and (max-width: 767px) {
+    .push-canvas {
+        -webkit-transition: all .25s ease-out;
+        -moz-transition: all .25s ease-out;
+        -o-transition: all .25s ease-out;
+        transition: all .25s ease-out;
+
+        overflow-x: hidden;
+        position: relative;
+        left: 0;
+    }
+    
+    .push-canvas.pushed-left {
+        left: -50%;
+    }
+    
+    .push-canvas.pushed-right {
+        left: 50%;
+    }
+    
+    .navbar-push {
+        -webkit-transition: all .25s ease-out;
+        -moz-transition: all .25s ease-out;
+        -o-transition: all .25s ease-out;
+        transition: all .25s ease-out;
+
+        height: 100%;
+        position: fixed;
+        width: 50%;
+        top: 0;
+    }
+    
+    .navbar-push.navbar-push-left {
+        right: -50%;
+    }
+    
+    .navbar-push.navbar-push-right {
+        left: -50%;
+    }
+    
+    .navbar-push.navbar-push-right.in {
+        left: 0;
+    }
+    
+    .navbar-push.navbar-push-left.in {
+        right: 0;
+    }
+}
+
+/* The snackbar - position it at the bottom and in the middle of the screen */
+#snackbar {
+    visibility: hidden; /* Hidden by default. Visible on click */
+    min-width: 250px; /* Set a default minimum width */
+    margin-left: -125px; /* Divide value of min-width by 2 */
+    background-color: #333; /* Black background color */
+    color: #fff; /* White text color */
+    text-align: center; /* Centered text */
+    border-radius: 2px; /* Rounded borders */
+    padding: 16px; /* Padding */
+    position: fixed; /* Sit on top of the screen */
+    z-index: 1; /* Add a z-index if needed */
+    left: 50%; /* Center the snackbar */
+    bottom: 30px; /* 30px from the bottom */
+}
+
+/* Show the snackbar when clicking on a button (class added with JavaScript) */
+#snackbar.show {
+    visibility: visible; /* Show the snackbar */
+
+/* Add animation: Take 0.5 seconds to fade in and out the snackbar. 
+However, delay the fade out process for 2.5 seconds */
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+/* Animations to fade the snackbar in and out */
+@-webkit-keyframes fadein {
+    from {bottom: 0; opacity: 0;} 
+    to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+    from {bottom: 30px; opacity: 1;} 
+    to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
