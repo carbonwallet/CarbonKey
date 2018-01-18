@@ -17,7 +17,7 @@ Trust is the main issue with crypto currency wallets these days. We have to trus
 
 Most crypto currencies come with multi signature built into the software but few wallets are using this feature.
 
-CarbonKey is designed to take advantage of the multi signature infrastructure in place and provide a verifiable secure code base. Wallets that support the CarbonKey protocol are more as at least one private key is not controlled by the wallet provider.
+CarbonKey is designed to take advantage of the multi signature infrastructure in place and provide a verifiable secure code base. Wallets that support the CarbonKey protocol are more secure as at least one private key is not controlled by the wallet provider.
 
 Currently CarbonWallet https://carbonwallet.com is the only wallet supporting multi signature wallets secured with CarbonKey.
 
