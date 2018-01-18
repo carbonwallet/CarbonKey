@@ -8,7 +8,6 @@
 
     <title>CarbonKey</title>
     <link rel="icon" type="image/png" href="/img/drawable-xhdpi-icon.png" sizes="96x96">
-    <link rel="manifest" href="/manifest.json">
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="css/bootstrap.min.css">
@@ -111,19 +110,14 @@
             var myData = context.getImageData(0, 0, img.width, img.height);
 
             // scan for QRCode
-            message = {
+            const message = {
                 cmd: 'process',
                 width: this.width,
                 height: this.height,
                 imageData: myData
             };
             
-            var messageChannel = new MessageChannel();
-            messageChannel.port1.onmessage = function(event) {
-                showResult(event);
-            }
-
-            navigator.serviceWorker.controller.postMessage(message, [messageChannel.port2]);
+            qrcodeWorker.postMessage(message);
         };
         var _URL = window.URL || window.webkitURL;
         img.src = _URL.createObjectURL(fileList[0]);
@@ -293,19 +287,14 @@
                 var imageData = _context.getImageData(0, 0, width, height);
             
                 // scan for QRCode
-                message = {
+                const message = {
                     cmd: 'process',
                     width: width,
                     height: height,
                     imageData: imageData
                 };
-                
-                var messageChannel = new MessageChannel();
-                messageChannel.port1.onmessage = function(event) {
-                    showResult(event);
-                }
 
-                navigator.serviceWorker.controller.postMessage(message, [messageChannel.port2]);
+                qrcodeWorker.postMessage(message);
             } catch(e) {
                 console.log(e);
             }
@@ -818,6 +807,7 @@
         navigator.serviceWorker.controller.postMessage(message, [messageChannel.port2]);
     }
 
+    // Register the service worker that caches our files.
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker
             .register('/service-worker.js')
@@ -827,9 +817,13 @@
             .catch(err => {
             console.log('Service worker registration failed: ' + err);
             });
-
-        navigator.serviceWorker.controller.postMessage({cmd: 'init'});
     }
+
+    // A web worker for running the main QR code parsing on
+    // a background thread.
+    const qrcodeWorker = new Worker("qrcode-web-worker.js");
+    qrcodeWorker.postMessage({cmd: 'init'});
+    qrcodeWorker.addEventListener('message', showResult);
     </script>
   </body>
 </html>
