@@ -37,10 +37,6 @@
         $('#home-link').click(function() {
             resetUI();
             $('#home').show();
-        
-            var bitid = 'bitid://carbonwallet.com/bitid_callback?x=b49984ec90fe0762';
-            $('#bitid-key').text(
-                generateSignatureMessage(toWif(), bitid).address);
             
             return false;
         });
@@ -686,12 +682,14 @@
 
     <main role="main" class="container">
 
-      <div class="page mt-5" id="home">
-        <h1>The Home</h1>
-        <p class="lead" id="bitid-key"></p>
-        <button id="scan-button" class="btn btn-success">Scan QR Code</button>
-        <input id="fileChooser" type="file" accept="image/*" class="btn btn-success">
-      </div>
+        <div class="page mt-5 pt-5 text-center" id="home">
+            <div class="top">
+                <h2>Scan the QR code on <span>CarbonWallet.com</span></h2>
+                <p><img src="../img/qr-phone.png"></img></p>
+            </div>
+            <button id="scan-button" class="btn btn-success">Scan QR Code</button>
+            <input id="fileChooser" type="file" accept="image/*" class="btn btn-success">
+        </div>
       
       <div class="page mt-5" id="backup" style="display: none">
         <h1>Backup</h1>

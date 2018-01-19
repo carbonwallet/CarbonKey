@@ -1,3 +1,70 @@
+/*****************************************************************************
+* Main document
+*****************************************************************************/
+
+body {
+	background:#353535;
+	color: #fff;
+}
+
+h2 {
+	color:#fff;
+	font-family:'LatoWebBold';
+	text-transform:uppercase;
+	letter-spacing:.25em;
+	font-size:17px;
+	line-height:1.4;
+	padding:70px 20px 0;
+}
+
+h2 span {
+	display:block;
+	color:#ffd307;
+}
+
+.btn-success {
+	-webkit-transform:translateX(-50%);
+	-ms-transform:translateX(-50%);
+	transform:translateX(-50%);
+	position:absolute;
+	bottom:20px;
+	left:50%;
+	padding:4px 26px;
+	background-color:#16b5dd;
+	text-transform:uppercase;
+	font-family:'LatoWebBold';
+	letter-spacing:.04em;
+	width:210px;
+}
+
+/*****************************************************************************
+* Home Page
+*****************************************************************************/
+
+#home {
+    height: 100%;
+}
+
+#home .top img {
+	max-width:165px;
+	margin:auto;
+	position:relative;
+	margin-top:15px;
+}
+
+#home .top {
+	height:60%;
+	background:url(../img/qr-bg.jpg) no-repeat;
+	background-position:center;
+	-webkit-background-size:cover;
+	-moz-background-size:cover;
+	background-size:cover;
+	-o-background-size:cover;
+}
+
+/*****************************************************************************
+* Scanning page
+*****************************************************************************/
 #scans {
 	color: #ccc;
 	text-align: center;
@@ -45,62 +112,9 @@ video {
     display: none;
 }
 
-/* Push menu. */
-.navbar-push {
-    padding-right: 15px;
-    padding-left: 15px;
-    margin-left: 0;
-    margin-right: 0;
-}
-
-@media screen and (max-width: 767px) {
-    .push-canvas {
-        -webkit-transition: all .25s ease-out;
-        -moz-transition: all .25s ease-out;
-        -o-transition: all .25s ease-out;
-        transition: all .25s ease-out;
-
-        overflow-x: hidden;
-        position: relative;
-        left: 0;
-    }
-    
-    .push-canvas.pushed-left {
-        left: -50%;
-    }
-    
-    .push-canvas.pushed-right {
-        left: 50%;
-    }
-    
-    .navbar-push {
-        -webkit-transition: all .25s ease-out;
-        -moz-transition: all .25s ease-out;
-        -o-transition: all .25s ease-out;
-        transition: all .25s ease-out;
-
-        height: 100%;
-        position: fixed;
-        width: 50%;
-        top: 0;
-    }
-    
-    .navbar-push.navbar-push-left {
-        right: -50%;
-    }
-    
-    .navbar-push.navbar-push-right {
-        left: -50%;
-    }
-    
-    .navbar-push.navbar-push-right.in {
-        left: 0;
-    }
-    
-    .navbar-push.navbar-push-left.in {
-        right: 0;
-    }
-}
+/*****************************************************************************
+* Snackbar
+*****************************************************************************/
 
 /* The snackbar - position it at the bottom and in the middle of the screen */
 #snackbar {
