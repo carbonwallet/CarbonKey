@@ -36,15 +36,14 @@
         }
 
         $('#home-link').click(function() {
-            resetUI();
-            $('#home').show();
-            $('#brand').text('Carbon Key');
+
+            initHomePage();
             
             return false;
         });
         
         // Make sure the home page intialises on startup.
-        $('#home-link').trigger( "click" );
+        initHomePage();
         
         $('#backup-link').click(function() {
             resetUI();
@@ -96,6 +95,12 @@
             $('#fileChooser').val(null);
         });
     });
+
+    function initHomePage() {
+        resetUI();
+        $('#home').show();
+        $('#brand').text('Carbon Key');
+    }
 
     // For those devices where we can't get the users camera directly.
     function doSomethingWithFiles(fileList) {
@@ -263,7 +268,8 @@
         
             navigator.vibrate(200);
             processQRCode(resultData.result);
-            $('#home-link').trigger( "click" );
+
+            initHomePage();
         
         } else {
             // if not found, retry
