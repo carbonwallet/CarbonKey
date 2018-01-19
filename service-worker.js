@@ -7,7 +7,13 @@ const urlsToCache = [
   '/js/bootstrap.min.js',
   '/js/jquery-3.2.1.slim.min.js',
   '/js/popper.min.js',
-  '/qrcode-web-worker.js'
+  '/qrcode-web-worker.js',
+	'./img/important.png',
+	'./img/qr-phone.png',
+	'./img/drawable-xhdpi-icon.png',
+	'./img/drawable-xxhdpi-icon.png',
+	'./img/drawable-xxxhdpi-icon.png',
+	'./img/qr-bg.jpg',
 ];
 
 // Listen for the install event, which fires when the service worker is installing
