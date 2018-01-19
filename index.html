@@ -72,11 +72,13 @@
             
             return false;
         });
+
         $('.nav-link').on('click', function(){ 
             if($('.navbar-toggler').css('display') !='none'){
                 $(".navbar-toggler").trigger( "click" );
             }
         });
+
         $('#restore-button').click(function() {
             
             var words = $('#restore-words').val();
@@ -89,9 +91,10 @@
             return false;
         });
 
-        const fileInput = document.getElementById('fileChooser');
-
-        fileInput.addEventListener('change', (e) => doSomethingWithFiles(e.target.files));
+        $('#fileChooser').change(function(e) {
+            doSomethingWithFiles(e.target.files);
+            $('#fileChooser').val(null);
+        });
     });
 
     // For those devices where we can't get the users camera directly.
