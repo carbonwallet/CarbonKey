@@ -131,7 +131,8 @@
     // Hide other pages and close the qr code reader if it's
     // open.
     function resetUI() {
-        $('.page').hide();
+        $('.page').hide(); 
+
         if(_scannerIsRunning) {
             stopScanner();
             _scannerIsRunning = false;
@@ -669,11 +670,11 @@
 
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
       <a class="navbar-brand" href="#" id="brand">Carbon Key</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+      <button id="navButton" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#carbonNav" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+      <div class="collapse navbar-collapse" id="carbonNav">
         <ul class="navbar-nav">
           <li class="nav-item active">
             <a id="home-link" class="nav-link" href="#">Home</a>
