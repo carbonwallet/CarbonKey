@@ -6,7 +6,8 @@ const urlsToCache = [
   '/js/bitcoinjs-lib.js',
   '/js/bootstrap.min.js',
   '/js/jquery-3.2.1.slim.min.js',
-  '/js/popper.min.js'
+  '/js/popper.min.js',
+  '/qrcode-web-worker.js'
 ];
 
 // Listen for the install event, which fires when the service worker is installing

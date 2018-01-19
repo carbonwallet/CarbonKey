@@ -822,7 +822,6 @@
     // A web worker for running the main QR code parsing on
     // a background thread.
     const qrcodeWorker = new Worker("qrcode-web-worker.js");
-    qrcodeWorker.postMessage({cmd: 'init'});
     qrcodeWorker.addEventListener('message', showResult);
     </script>
   </body>
