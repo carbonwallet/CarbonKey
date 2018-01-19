@@ -37,6 +37,7 @@
         $('#home-link').click(function() {
             resetUI();
             $('#home').show();
+            $('#brand').text('Carbon Key');
             
             return false;
         });
@@ -47,6 +48,7 @@
         $('#backup-link').click(function() {
             resetUI();
             $('#backup').show();
+            $('#brand').text('Backup');
             
             $('#backup-seed').html(window.localStorage.getItem("bip39"));
             
@@ -56,12 +58,14 @@
             
             resetUI();
             $('#restore').show();
+            $('#brand').text('Restore');
             
             return false;
         });
         $('#scan-button').click(function() {
             $('.page').hide();
             $('#scanner').show();
+            $('#brand').text('Scanner');
 
             startScanner();
             
@@ -680,9 +684,9 @@
       </div>
     </nav>
 
-    <main role="main" class="container">
+    <main role="main" class="container-fluid">
 
-        <div class="page mt-5 pt-3 text-center" id="home">
+        <div class="page mt-5 text-center" id="home">
             <div class="top">
                 <h2>Scan the QR code on <span>CarbonWallet.com</span></h2>
                 <p><img src="../img/qr-phone.png"></img></p>
@@ -715,13 +719,13 @@
         </div>
       
         <div class="page mt-5" id="scanner" style="display: none">
-            <h1>QR Code Scanner</h1>
+            <br />
+            <br />
             <p id="scans">Waiting to scan...</p>
             <video id="camera-stream" autoplay></video>
 
             <div id="snapshotLimitOverlay">
                 <div id="about">
-                    <h4>QR Code Scanner</h4>
                     <p>Attempting to initialise camera<br /></p>
                 </div>
             </div>
