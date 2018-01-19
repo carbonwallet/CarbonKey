@@ -37,6 +37,15 @@ h2 span {
 	width:210px;
 }
 
+.screen-container-top {
+	background:#353535;
+	padding:20px;
+}
+
+#brand {
+	text-transform:uppercase;
+}
+
 /*****************************************************************************
 * Home Page
 *****************************************************************************/
@@ -60,6 +69,56 @@ h2 span {
 	-moz-background-size:cover;
 	background-size:cover;
 	-o-background-size:cover;
+}
+
+/*****************************************************************************
+* Restore Page
+*****************************************************************************/
+
+#restore input, #restore textarea {
+	width:100%;
+	background:transparent;
+	border:2px solid #000;
+	border-radius:0;
+	-webkit-border-radius:0;
+	box-shadow:none;
+	min-height:47px;
+	padding: 8px;
+	color:#fff;
+}
+
+/*****************************************************************************
+* Backup Page
+*****************************************************************************/
+#backup .screen-container-btm h3 {
+	color:#f9c31b;
+	font-family: 'ubuntu_monobold';
+	font-size:26px;
+	font-weight:600;
+	padding:15px 0;
+	line-height:30px;
+}
+
+
+#backup .screen-container-btm p.important {
+	position:relative;
+	padding-left:30px;
+	color:#fff;
+	font-family:'LatoWeb';
+	font-size:17px;
+	text-align:left;
+}
+
+#backup .screen-container-btm p.important:before {
+	position:absolute;
+	content:"";
+	left:0;
+	top:0;
+    background: url(../img/important.png) no-repeat;
+    width:20px;
+    height: 19px;
+    background-size: 100%;
+    -webkit-background-size: 100%;
 }
 
 /*****************************************************************************
@@ -121,7 +180,7 @@ video {
     visibility: hidden; /* Hidden by default. Visible on click */
     min-width: 250px; /* Set a default minimum width */
     margin-left: -125px; /* Divide value of min-width by 2 */
-    background-color: #333; /* Black background color */
+    background-color: black; /* Black background color */
     color: #fff; /* White text color */
     text-align: center; /* Centered text */
     border-radius: 2px; /* Rounded borders */
@@ -129,7 +188,7 @@ video {
     position: fixed; /* Sit on top of the screen */
     z-index: 1; /* Add a z-index if needed */
     left: 50%; /* Center the snackbar */
-    bottom: 30px; /* 30px from the bottom */
+    bottom: 50%; /* 30px from the bottom */
 }
 
 /* Show the snackbar when clicking on a button (class added with JavaScript) */
@@ -145,20 +204,20 @@ However, delay the fade out process for 2.5 seconds */
 /* Animations to fade the snackbar in and out */
 @-webkit-keyframes fadein {
     from {bottom: 0; opacity: 0;} 
-    to {bottom: 30px; opacity: 1;}
+    to {bottom: 50%; opacity: 1;}
 }
 
 @keyframes fadein {
     from {bottom: 0; opacity: 0;}
-    to {bottom: 30px; opacity: 1;}
+    to {bottom: 50%; opacity: 1;}
 }
 
 @-webkit-keyframes fadeout {
-    from {bottom: 30px; opacity: 1;} 
+    from {bottom: 50%; opacity: 1;} 
     to {bottom: 0; opacity: 0;}
 }
 
 @keyframes fadeout {
-    from {bottom: 30px; opacity: 1;}
+    from {bottom: 50%; opacity: 1;}
     to {bottom: 0; opacity: 0;}
 }

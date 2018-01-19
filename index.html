@@ -660,7 +660,7 @@
   <body>
 
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-      <a class="navbar-brand" href="#">CarbonKey</a>
+      <a class="navbar-brand" href="#" id="brand">Carbon Key</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -682,39 +682,51 @@
 
     <main role="main" class="container">
 
-        <div class="page mt-5 pt-5 text-center" id="home">
+        <div class="page mt-5 pt-3 text-center" id="home">
             <div class="top">
                 <h2>Scan the QR code on <span>CarbonWallet.com</span></h2>
                 <p><img src="../img/qr-phone.png"></img></p>
             </div>
             <button id="scan-button" class="btn btn-success">Scan QR Code</button>
-            <input id="fileChooser" type="file" accept="image/*" class="btn btn-success">
+            <input id="fileChooser" type="file" accept="image/*" 
+                class="btn btn-success" style="bottom: 80px">
         </div>
       
-      <div class="page mt-5" id="backup" style="display: none">
-        <h1>Backup</h1>
-        <h3 id="backup-seed"></h3>
-      </div>
-      
-      <div class="page mt-5" id="restore" style="display: none">
-        <h1>Restore from Backup</h1>
-        <textarea class="form-control" id="restore-words"></textarea>
-        <button id="restore-button" class="btn btn-success">Restore</button>
-      </div>
-      
-      <div class="page mt-5" id="scanner" style="display: none">
-        <h1>QR Code Scanner</h1>
-        <p id="scans">Waiting to scan...</p>
-        <video id="camera-stream" autoplay></video>
+        <div class="page mt-5" id="backup" style="display: none">
 
-        <div id="snapshotLimitOverlay">
-            <div id="about">
-                <h4>QR Code Scanner</h4>
-                <p>Attempting to initialise camera<br /></p>
+            <div class="screen-container-top text-center">
+                <h2>To backup your key write down the passphrase below.</h2>
             </div>
+            <div class="screen-container-btm">
+                <h3 id="backup-seed" class="text-center"></h3>
+                <p class="important">Important : 
+                    If you don't backup your keys you will lose access to 
+                    any services that use the key.</p>
+            </div>
+  
         </div>
-        <canvas id="qr-canvas" width=800 height=600></canvas>
-      </div>
+      
+        <div class="page mt-5" id="restore" style="display: none">
+            <div class="screen-container-top text-center">
+                <h2>Enter your twelve word backup phrase.</h2>
+            </div>
+            <textarea class="form-control" id="restore-words"></textarea>
+            <button id="restore-button" class="btn btn-success">Restore Key</button>
+        </div>
+      
+        <div class="page mt-5" id="scanner" style="display: none">
+            <h1>QR Code Scanner</h1>
+            <p id="scans">Waiting to scan...</p>
+            <video id="camera-stream" autoplay></video>
+
+            <div id="snapshotLimitOverlay">
+                <div id="about">
+                    <h4>QR Code Scanner</h4>
+                    <p>Attempting to initialise camera<br /></p>
+                </div>
+            </div>
+            <canvas id="qr-canvas" width=800 height=600></canvas>
+        </div>
 
     </main><!-- /.container -->
 
