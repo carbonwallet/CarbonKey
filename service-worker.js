@@ -1,4 +1,4 @@
-const CACHE_NAME = 'carbonkey-cache-v11';
+const CACHE_NAME = 'carbonkey-cache-v12';
 const urlsToCache = [
   '/',
   '/css/bootstrap.min.css',
