@@ -1,6 +1,7 @@
 const CACHE_NAME = 'carbonkey-cache-v12';
 const urlsToCache = [
   '/',
+  '/index.html',
   '/css/bootstrap.min.css',
   '/css/style.css',
   '/js/bitcoinjs-lib.js',
