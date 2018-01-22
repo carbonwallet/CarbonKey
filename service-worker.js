@@ -1,4 +1,4 @@
-const CACHE_NAME = 'carbonkey-cache-v12';
+const CACHE_NAME = 'danny-dog';
 const urlsToCache = [
   '/',
   '/index.html',
