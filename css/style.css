@@ -2,14 +2,16 @@
 * Main document
 *****************************************************************************/
 
-html, body, main {
+html, main {
 	height: 100%;
 }
 
 body {
 	background:#353535;
 	color: #fff;
+	height: calc(100% - 48px);
 }
+
 
 h2 {
 	color:#fff;
