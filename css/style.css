@@ -25,6 +25,10 @@ h2 span {
 	color:#ffd307;
 }
 
+nav {
+	background-color: #1f1f1f;
+}
+
 .btn {
 	-webkit-transform:translateX(-50%);
 	-ms-transform:translateX(-50%);
