@@ -8,11 +8,12 @@ html, main {
 
 body {
 	background:#353535;
-	color: #fff;
 	height: calc(100% - 48px);
 }
 
-
+.page {
+	color: #fff;
+}
 h2 {
 	color:#fff;
 	text-transform:uppercase;
@@ -31,7 +32,7 @@ nav {
 	background-color: #1f1f1f;
 }
 
-.btn {
+.btn-bottom {
 	-webkit-transform:translateX(-50%);
 	-ms-transform:translateX(-50%);
 	transform:translateX(-50%);

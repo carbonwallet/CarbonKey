@@ -721,9 +721,7 @@
                 <p><img src="../img/qr-phone.png"></img></p>
             </div>
             <div class="bottom"></div>
-            <button id="scan-button" class="btn">Scan QR Code</button>
-            <!--<input id="fileChooser" type="file" accept="image/*" 
-                class="btn btn-success" style="bottom: 80px">-->
+            <button id="scan-button" class="btn btn-bottom">Scan QR Code</button>
         </div>
       
         <div class="page mt-5" id="backup" style="display: none">
@@ -773,7 +771,7 @@
                 </svg>
                 <textarea class="form-control" id="restore-words"></textarea>
             </div>
-            <button id="restore-button" class="btn btn-success">Restore Key</button>
+            <button id="restore-button" class="btn btn-bottom">Restore Key</button>
         </div>
       
         <div class="page mt-5" id="scanner" style="display: none">
@@ -812,6 +810,9 @@
                     <p id="xpub-address" class="text-truncate system-info"></p>
                 </div>
             </div>
+
+            <input id="fileChooser" type="file" accept="image/*" 
+                class="btn btn-bottom" style="bottom: 80px">
         </div>
 
     </main><!-- /.container -->
@@ -828,7 +829,9 @@
                 </button>
             </div>
             <div class="modal-body">
-                ...
+                Authenticate with 
+                <span id="bitid-requester">https://carbonwallet.com</span>
+                ?
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
