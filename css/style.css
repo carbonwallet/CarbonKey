@@ -2,6 +2,10 @@
 * Main document
 *****************************************************************************/
 
+html, body, main {
+	height: 100%;
+}
+
 body {
 	background:#353535;
 	color: #fff;
@@ -9,7 +13,6 @@ body {
 
 h2 {
 	color:#fff;
-	font-family:'LatoWebBold';
 	text-transform:uppercase;
 	letter-spacing:.25em;
 	font-size:17px;
@@ -22,7 +25,7 @@ h2 span {
 	color:#ffd307;
 }
 
-.btn-success {
+.btn {
 	-webkit-transform:translateX(-50%);
 	-ms-transform:translateX(-50%);
 	transform:translateX(-50%);
@@ -32,9 +35,19 @@ h2 span {
 	padding:4px 26px;
 	background-color:#16b5dd;
 	text-transform:uppercase;
-	font-family:'LatoWebBold';
 	letter-spacing:.04em;
 	width:210px;
+	color: white;
+}
+
+/* Remove padding from bootstrap */
+.container-fluid {
+	padding: 0;
+}
+
+.page {
+	padding-left: 15px;
+	padding-right: 15px;
 }
 
 .screen-container-top {
@@ -51,7 +64,8 @@ h2 span {
 *****************************************************************************/
 
 #home {
-    height: 100%;
+	padding: 0;
+	height: 100%;
 }
 
 #home .top img {
@@ -69,6 +83,11 @@ h2 span {
 	-moz-background-size:cover;
 	background-size:cover;
 	-o-background-size:cover;
+}
+
+#home .bottom {
+	height: 40%;
+	background-color: white;
 }
 
 /*****************************************************************************
@@ -92,7 +111,6 @@ h2 span {
 *****************************************************************************/
 #backup .screen-container-btm h3 {
 	color:#f9c31b;
-	font-family: 'ubuntu_monobold';
 	font-size:26px;
 	font-weight:600;
 	padding:15px 0;
@@ -104,7 +122,6 @@ h2 span {
 	position:relative;
 	padding-left:30px;
 	color:#fff;
-	font-family:'LatoWeb';
 	font-size:17px;
 	text-align:left;
 }
