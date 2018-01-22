@@ -107,6 +107,11 @@ svg.down-arrow {
 * Restore Page
 *****************************************************************************/
 
+#restore {
+	background: #1f1f1f;
+	height: 100%;
+}
+
 #restore input, #restore textarea {
 	width:100%;
 	background:transparent;
@@ -117,6 +122,10 @@ svg.down-arrow {
 	min-height:47px;
 	padding: 8px;
 	color:#fff;
+}
+
+#backup h2 {
+	padding-top: 20px;
 }
 
 /*****************************************************************************
@@ -135,23 +144,6 @@ svg.down-arrow {
 	padding:15px 0;
 	line-height:30px;
 }
-
-
-#backup .screen-container-btm:before {
-	width:0;
-	height:0;
-	content:"";
-	border-left:16px solid transparent;
-	border-right:16px solid transparent;
-	border-top:16px solid #353535;
-	position:absolute;
-	top:0;
-	left:50%;
-	-webkit-transform:translateX(-50%);
-	-ms-transform:translateX(-50%);
-	transform:translateX(-50%);
-}
-
 
 #backup .screen-container-btm p.important {
 	position:relative;
