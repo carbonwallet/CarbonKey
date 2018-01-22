@@ -45,18 +45,31 @@ h2 span {
 	padding: 0;
 }
 
-.page {
+
+.screen-container-top {
+	padding:20px;
+	background:#353535;
+}
+
+.screen-container-btm {
 	padding-left: 15px;
 	padding-right: 15px;
 }
 
-.screen-container-top {
-	background:#353535;
-	padding:20px;
-}
-
 #brand {
 	text-transform:uppercase;
+}
+
+svg {
+	height: 75px;
+	width: 75px;
+	fill: #f9c31b;
+}
+
+svg.down-arrow {
+	height: 25px;
+	width: 75px;
+	fill: #353535;
 }
 
 /*****************************************************************************
@@ -109,12 +122,34 @@ h2 span {
 /*****************************************************************************
 * Backup Page
 *****************************************************************************/
+
+#backup {
+	background: #1f1f1f;
+	height: 100%;
+}
+
 #backup .screen-container-btm h3 {
 	color:#f9c31b;
 	font-size:26px;
 	font-weight:600;
 	padding:15px 0;
 	line-height:30px;
+}
+
+
+#backup .screen-container-btm:before {
+	width:0;
+	height:0;
+	content:"";
+	border-left:16px solid transparent;
+	border-right:16px solid transparent;
+	border-top:16px solid #353535;
+	position:absolute;
+	top:0;
+	left:50%;
+	-webkit-transform:translateX(-50%);
+	-ms-transform:translateX(-50%);
+	transform:translateX(-50%);
 }
 
 
@@ -126,16 +161,15 @@ h2 span {
 	text-align:left;
 }
 
-#backup .screen-container-btm p.important:before {
-	position:absolute;
-	content:"";
-	left:0;
-	top:0;
-    background: url(../img/important.png) no-repeat;
-    width:20px;
-    height: 19px;
-    background-size: 100%;
-    -webkit-background-size: 100%;
+#backup h2 {
+	padding-top: 20px;
+}
+
+#backup .exclaim {
+	background-color: red;
+	border-radius: 20%;
+	padding-left: 10px;
+	padding-right: 10px;
 }
 
 /*****************************************************************************
