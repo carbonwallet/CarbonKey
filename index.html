@@ -823,7 +823,6 @@
         <div class="page mt-5" id="about-page" style="display: none">
             <div class="screen-container-top text-center">
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 1000 1000" enable-background="new 0 0 1000 1000" xml:space="preserve">
-                    <metadata> Svg Vector Icons : http://www.onlinewebfonts.com/icon </metadata>
                     <g>
                         <g transform="translate(0.000000,511.000000) scale(0.100000,-0.100000)">
                             <path d="M234,4052.3c-143.4-112.3-133.9,98-133.9-3324.7c0-2939.9,2.4-3143.1,43-3222c86-176.9-33.5-167.3,2246.8-167.3h2036.4v-215.1v-212.7l-941.7-7.2c-1130.6-9.6-1032.6,21.5-1166.4-356.1c-93.2-265.3-107.6-353.8-62.1-399.2c40.6-40.6,5447.2-40.6,5487.8,0c45.4,45.4,31.1,133.8-62.1,399.2c-133.9,377.6-35.9,346.6-1166.4,356.1l-941.7,7.2v212.7v215.1h2038.8c2277.8,0,2158.3-9.6,2244.4,167.3c40.6,78.9,43,282,43,3222c0,3422.7,9.6,3212.4-133.8,3324.7l-64.5,50.2H5000H298.5L234,4052.3z M9297.5,966.6l-7.2-2540.8H5000H709.6l-7.2,2540.8l-4.8,2538.4H5000h4302.3L9297.5,966.6z M5368.1-1982.9c40.6-38.3,50.2-145.8,19.1-193.6c-33.5-55-153-78.9-387.2-78.9c-325.1,0-406.3,33.5-406.3,172.1c0,124.3,43,138.6,406.3,138.6C5270.1-1944.7,5339.4-1951.8,5368.1-1982.9z" />
@@ -934,16 +933,6 @@
 
     <script>
         /* global navigator */
-        // Check to make sure the browser supports service workers
-        function sendMessage(message) {
-
-            var messageChannel = new MessageChannel();
-            messageChannel.port1.onmessage = function(event) {
-                console.log("Response the SW : ", event.data);
-            }
-
-            navigator.serviceWorker.controller.postMessage(message, [messageChannel.port2]);
-        }
 
         // Register the service worker that caches our files.
         if ('serviceWorker' in navigator) {
