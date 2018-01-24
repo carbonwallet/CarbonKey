@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
@@ -15,768 +16,788 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="js/jquery-3.2.1.slim.min.js"></script>
     <script>
-    var _scannerIsRunning = false;
-    var _player;
-    var _localMediaStream;
-    var _context;
-    /* global $ */
-    /* global Bitcoin */
+        var _scannerIsRunning = false;
+        var _player;
+        var _localMediaStream;
+        var _context;
+        /* global $ */
+        /* global Bitcoin */
 
-    // =======================================================================
-    // Use JQuery to create a lightweight UI.
-    // Basically when the user clicks a link we show a div and hide others.
-    // =======================================================================
+        // =======================================================================
+        // Use JQuery to create a lightweight UI.
+        // Basically when the user clicks a link we show a div and hide others.
+        // =======================================================================
 
-    $( document ).ready(function() {
-        
-        if(window.localStorage.getItem("bip39") == null) {
-            initialise();
-        } else {
-            snackBar('Ready');
-        }
+        $(document).ready(function() {
 
-        if (! location.hostname === "localhost" && !location.hostname === "127.0.0.1")
-            $('#fileChooser').hide();
-
-        $('#home-link').click(function() {
-
-            initHomePage();
-            
-            return false;
-        });
-        
-        // Make sure the home page intialises on startup.
-        initHomePage();
-        
-        $('#backup-link').click(function() {
-            resetUI();
-            $('#backup').show();
-            $('#brand').text('Backup');
-            
-            $('#backup-seed').html(window.localStorage.getItem("bip39"));
-            
-            return false;
-        });
-        $('#restore-link').click(function() {
-            
-            resetUI();
-            $('#restore').show();
-            $('#brand').text('Restore');
-            
-            return false;
-        });
-        $('#about-link').click(function() {
-            
-            resetUI();
-            $('#about-page').show();
-            $('#brand').text('About');
-
-            var bitid = 'bitid://carbonwallet.com/bitid_callback?x=b49984ec90fe0762';
-            $('#bitid-address').text(
-                generateSignatureMessage(toWif(), bitid).address);
-
-            const xpub58 = getHDWalletDeterministicKey(toWif()).neutered().toBase58();
-            $('#xpub-address').text(xpub58.substr(xpub58.length - 8));
-            
-            return false;
-        });
-        $('#scan-button').click(function() {
-            $('.page').hide();
-            $('#scanner').show();
-            $('#brand').text('Scanner');
-
-            startScanner();
-            
-            return false;
-        });
-
-        $('.nav-link').on('click', function(){ 
-            if($('.navbar-toggler').css('display') !='none'){
-                $(".navbar-toggler").trigger( "click" );
-            }
-        });
-
-        $('#restore-button').click(function() {
-            
-            var words = $('#restore-words').val();
-              
-            if(Bitcoin.Bip39.validateMnemonic(words)) {
-                window.localStorage.setItem("bip39", words);
-                $('#home-link').trigger( "click" );
-            }
-            
-            return false;
-        });
-
-        $('#fileChooser').change(function(e) {
-            doSomethingWithFiles(e.target.files);
-            $('#fileChooser').val(null);
-        });
-    });
-
-    function initHomePage() {
-        resetUI();
-        $('#home').show();
-        $('#brand').text('Carbon Key');
-    }
-
-    // For those devices where we can't get the users camera directly.
-    function doSomethingWithFiles(fileList) {
-
-        const imageData = URL.createObjectURL(fileList[0]);
-        img = new Image();
-        img.onload = function () {
-            console.log(this.width + " " + this.height);
-
-            // Convert to image data by drawing it into a canvas.
-            var canvas = document.createElement('canvas');
-            var context = canvas.getContext('2d');
-            canvas.width = this.width;
-            canvas.height = this.height;
-            context.drawImage(this, 0, 0 );
-            var myData = context.getImageData(0, 0, img.width, img.height);
-
-            // scan for QRCode
-            const message = {
-                cmd: 'process',
-                width: this.width,
-                height: this.height,
-                imageData: myData
-            };
-            
-            qrcodeWorker.postMessage(message);
-        };
-        var _URL = window.URL || window.webkitURL;
-        img.src = _URL.createObjectURL(fileList[0]);
-
-    }
-
-    // Hide other pages and close the qr code reader if it's
-    // open.
-    function resetUI() {
-        $('.page').hide(); 
-
-        if(_scannerIsRunning) {
-            stopScanner();
-            _scannerIsRunning = false;
-        }
-    }
-    
-    function snackBar(text) {
-        // Get the snackbar DIV
-        var x = document.getElementById("snackbar");
-        $('#snackbar').html(text);
-
-        // Add the "show" class to DIV
-        x.className = "show";
-
-        // After 3 seconds, remove the show class from DIV
-        setTimeout(function(){ x.className = x.className.replace("show", ""); }, 2000);
-    }
-    
-    // Called if no private key is set so far.  
-    function initialise() {
-        var words = Bitcoin.Bip39.generateMnemonic();
-        console.log(Bitcoin.Bip39.mnemonicToSeedHex(words));
-        try {
-          window.localStorage.setItem("bip39", words);
-          snackBar('Success Initialising Key');
-        } catch(e) {
-          snackBar('Problem ' + e);
-        }
-    }
-
-    // =======================================================================
-    // The QR code scanner
-    // To create a scanner in a PWA you need to do the following
-    // 1. Capture video input from the camera to a canvas
-    // 2. Send the contents of the canvas via a timer to a service worker
-    // 3. The sevice worker uses javascript libraries to scan for the QR.
-    // 4. Results are sent back via a message channel.
-    // =======================================================================
-    function startScanner() {
-
-        try {
-      
-            if (navigator.mediaDevices.getUserMedia) {
-                // Request the camera.
-                navigator.mediaDevices.enumerateDevices()
-                    .then(function (devices) {
-                        var device = devices.filter(function(device) {
-                            if (device.kind == "videoinput") {
-                                return device;
-                            }
-                        });
-        
-                        if (device.length > 1) {
-                            var constraints = {
-                                video: {
-                                    mandatory: {
-                                        sourceId: device[1].deviceId ? device[1].deviceId : null
-                                    }
-                                },
-                                audio: false
-                            };
-                            startCapture(constraints);
-                        }
-                        else if (device.length) {
-                            constraints = {
-                                video: {
-                                    mandatory: {
-                                        sourceId: device[0].deviceId ? device[0].deviceId : null
-                                    }
-                                },
-                                audio: false
-                            };
-                            startCapture(constraints);
-                        }
-                    })
-                    .catch(function (error) {
-                        alert("Error occurred : ", error);
-                    });
-                _scannerIsRunning = true;
-            
+            if (window.localStorage.getItem("bip39") == null) {
+                initialise();
             } else {
-                alert('Sorry, your browser does not support getUserMedia');
+                snackBar('Ready');
             }
-        } catch(e) {
-            alert(e);
-        }
-    }
 
+            if (!location.hostname === "localhost" && !location.hostname === "127.0.0.1")
+                $('#fileChooser').hide();
 
-    function startCapture(constraints) {
+            $('#home-link').click(function() {
 
-        navigator.getUserMedia = (navigator.getUserMedia ||
-                            navigator.webkitGetUserMedia ||
-                            navigator.mozGetUserMedia || 
-                            navigator.msGetUserMedia);
+                initHomePage();
 
-        navigator.getUserMedia(constraints,
-    
-        // Success Callback
-        function(localMediaStream) {
-            document.getElementById('about').style.display = 'none';
-            // Get a reference to the video element on the page.
-            var vid = document.getElementById('camera-stream');
-            
-            // Create an object URL for the video stream and use this 
-            // to set the video source.
-            vid.src = window.URL.createObjectURL(localMediaStream);
-            
-            _player = vid;
-            _localMediaStream = localMediaStream;
-            _canvas = document.getElementById('qr-canvas');
-            _context = _canvas.getContext('2d');
-            scanCode(true);
-        },
-    
-        // Error Callback
-        function(err) {
-            // Log the error to the console.
-            console.log('The following error occurred when trying to use getUserMedia: ' + err);
-        }
-        );
-    }
+                return false;
+            });
 
-    function showResult(e) {
-        var resultData = e.data;
-        
-        if (resultData.result !== false) {
-        
-            navigator.vibrate(200);
-            processQRCode(resultData.result);
-
+            // Make sure the home page intialises on startup.
             initHomePage();
-        
-        } else {
-            // if not found, retry
-        
-            document.getElementById('scans').innerHTML = resultData.error;
-        
-            scanCode(false);
+
+            $('#backup-link').click(function() {
+                resetUI();
+                $('#backup').show();
+                $('#brand').text('Backup');
+
+                $('#backup-seed').html(window.localStorage.getItem("bip39"));
+
+                return false;
+            });
+            $('#restore-link').click(function() {
+
+                resetUI();
+                $('#restore').show();
+                $('#brand').text('Restore');
+
+                return false;
+            });
+            $('#about-link').click(function() {
+
+                resetUI();
+                $('#about-page').show();
+                $('#brand').text('About');
+
+                var bitid = 'bitid://carbonwallet.com/bitid_callback?x=b49984ec90fe0762';
+                $('#bitid-address').text(
+                    generateSignatureMessage(toWif(), bitid).address);
+
+                const xpub58 = getHDWalletDeterministicKey(toWif()).neutered().toBase58();
+                $('#xpub-address').text(xpub58.substr(xpub58.length - 8));
+
+                return false;
+            });
+            $('#scan-button').click(function() {
+                $('.page').hide();
+                $('#scanner').show();
+                $('#brand').text('Scanner');
+
+                startScanner();
+
+                return false;
+            });
+
+            $('.nav-link').on('click', function() {
+                if ($('.navbar-toggler').css('display') != 'none') {
+                    $(".navbar-toggler").trigger("click");
+                }
+            });
+
+            $('#restore-button').click(function() {
+
+                var words = $('#restore-words').val();
+
+                if (Bitcoin.Bip39.validateMnemonic(words)) {
+                    window.localStorage.setItem("bip39", words);
+                    $('#home-link').trigger("click");
+                }
+
+                return false;
+            });
+
+            $('#fileChooser').change(function(e) {
+                doSomethingWithFiles(e.target.files);
+                $('#fileChooser').val(null);
+            });
+        });
+
+        function initHomePage() {
+            resetUI();
+            $('#home').show();
+            $('#brand').text('Carbon Key');
         }
-    };
 
-    function scanCode(wasSuccess) {
-        
-        setTimeout(function() {
-        
-            try {
+        // For those devices where we can't get the users camera directly.
+        function doSomethingWithFiles(fileList) {
 
-                var width = _player.videoWidth;
-                var height = _player.videoHeight;
-                
-                _canvas.width = width;
-                _canvas.height = height;
-                
-                // capture current snapshot
-                _context.drawImage(_player, 0, 0, width, height);
-                    
-                var imageData = _context.getImageData(0, 0, width, height);
-            
+            const imageData = URL.createObjectURL(fileList[0]);
+            img = new Image();
+            img.onload = function() {
+                console.log(this.width + " " + this.height);
+
+                // Convert to image data by drawing it into a canvas.
+                var canvas = document.createElement('canvas');
+                var context = canvas.getContext('2d');
+                canvas.width = this.width;
+                canvas.height = this.height;
+                context.drawImage(this, 0, 0);
+                var myData = context.getImageData(0, 0, img.width, img.height);
+
                 // scan for QRCode
                 const message = {
                     cmd: 'process',
-                    width: width,
-                    height: height,
-                    imageData: imageData
+                    width: this.width,
+                    height: this.height,
+                    imageData: myData
                 };
 
                 qrcodeWorker.postMessage(message);
-            } catch(e) {
-                console.log(e);
-            }
-        
-        }, wasSuccess ? 2000 : 500);
-    };
+            };
+            var _URL = window.URL || window.webkitURL;
+            img.src = _URL.createObjectURL(fileList[0]);
 
-    function stopScanner() {
-        console.log('Switching off camera.');
-        _player.pause();
-        _player.src = "";
-        _localMediaStream.getTracks()[0].stop();
-    }
-
-    // Decide what type of QR code this is i.e. BITID or transaction
-    // signing and process.
-    function processQRCode(data) {
-        if (/^(bitid:).*$/.test(data) === true) {
-            processBITID(data);
-        } else if(data.split("|").length > 3 === true) {
-            parsed = parseCommand(data);
-            console.log('Command ' + parsed.cmd);
-            if(parsed.cmd == 'mpk') {
-                tether(toWif(), parsed);
-            } 
-            if(parsed.cmd == 'sign') {
-                signTransaction(toWif(), parsed);
-            } 
-        } else {
-            snackBar(data);
         }
-    };
-    // End - QR code scanner
 
-    
-    function toWif() {
-        var words = window.localStorage.getItem("bip39");
-        var seed = Bitcoin.Bip39.mnemonicToSeedHex(words);
-        var hd = Bitcoin.BitcoinJS.HDNode.fromSeedHex(seed);
-        return hd.keyPair.toWIF();
-    }
+        // Hide other pages and close the qr code reader if it's
+        // open.
+        function resetUI() {
+            $('.page').hide();
 
-    // =======================================================================
-    // Functions necessary for BITID authentification.
-    // BITID is a protocol for authentication. https://github.com/bitid/bitid
-    // =======================================================================
+            if (_scannerIsRunning) {
+                stopScanner();
+                _scannerIsRunning = false;
+            }
+        }
 
-    function processBITID(bitid_qr_code) {
-    
-        console.log(bitid_qr_code);
-    
-        const msg = generateSignatureMessage(toWif(), bitid_qr_code);
+        function snackBar(text) {
+            // Get the snackbar DIV
+            var x = document.getElementById("snackbar");
+            $('#snackbar').html(text);
 
-        console.log(msg);
+            // Add the "show" class to DIV
+            x.className = "show";
 
-        $('#bitidModal').modal();
+            // After 3 seconds, remove the show class from DIV
+            setTimeout(function() {
+                x.className = x.className.replace("show", "");
+            }, 2000);
+        }
 
-        $('#bitidConfirm').click(function() {
-            snackBar('Authenticating');
+        // Called if no private key is set so far.  
+        function initialise() {
+            var words = Bitcoin.Bip39.generateMnemonic();
+            console.log(Bitcoin.Bip39.mnemonicToSeedHex(words));
+            try {
+                window.localStorage.setItem("bip39", words);
+                snackBar('Success Initialising Key');
+            } catch (e) {
+                snackBar('Problem ' + e);
+            }
+        }
 
-            window.fetch(getCallBackURL(bitid_qr_code), {
-                method: 'post',
-                headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(msg)
-            }).then(function(response) {
-                var contentType = response.headers.get("content-type");
-                if(contentType && contentType.includes("application/json")) {
-                    return response.json();
+        // =======================================================================
+        // The QR code scanner
+        // To create a scanner in a PWA you need to do the following
+        // 1. Capture video input from the camera to a canvas
+        // 2. Send the contents of the canvas via a timer to a service worker
+        // 3. The sevice worker uses javascript libraries to scan for the QR.
+        // 4. Results are sent back via a message channel.
+        // =======================================================================
+        function startScanner() {
+
+            try {
+
+                if (navigator.mediaDevices.getUserMedia) {
+                    // Request the camera.
+                    navigator.mediaDevices.enumerateDevices()
+                        .then(function(devices) {
+                            var device = devices.filter(function(device) {
+                                if (device.kind == "videoinput") {
+                                    return device;
+                                }
+                            });
+
+                            if (device.length > 1) {
+                                var constraints = {
+                                    video: {
+                                        mandatory: {
+                                            sourceId: device[1].deviceId ? device[1].deviceId : null
+                                        }
+                                    },
+                                    audio: false
+                                };
+                                startCapture(constraints);
+                            } else if (device.length) {
+                                constraints = {
+                                    video: {
+                                        mandatory: {
+                                            sourceId: device[0].deviceId ? device[0].deviceId : null
+                                        }
+                                    },
+                                    audio: false
+                                };
+                                startCapture(constraints);
+                            }
+                        })
+                        .catch(function(error) {
+                            alert("Error occurred : ", error);
+                        });
+                    _scannerIsRunning = true;
+
+                } else {
+                    alert('Sorry, your browser does not support getUserMedia');
                 }
-                throw new TypeError("Oops, we haven't got JSON! ");
-            }).then(function(json) {
-                if(json.message != null)
-                    throw('Message Error ' + json.message);
-                
-                return json
-            }).then(function(json) {
-                console.log(JSON.stringify(json));
-                snackBar('Success ' + JSON.stringify(json));
-            }).catch(function(error) {
-                snackBar('Error ' + error);
-            });
+            } catch (e) {
+                alert(e);
+            }
+        }
 
-            return true;
-        });
-    };
+        function startCapture(constraints) {
 
-    function parseURI(address) {
-      const reURLInformation = new RegExp([
-        '^(bitid)://', // protocol
-        '(([^:/?#]*)(?::([0-9]+))?)', // host (hostname and port)
-        '(/[^?#]*)', // pathname
-        '.x=([^\\&u=]*|)', // NONCE
-        '.(u=[^#]*|)' // IS UNSECURE
-      ].join(''));
-      const match = address.match(reURLInformation);
-      return match && {
-        href: address,
-        protocol: match[1],
-        host: match[2],
-        hostname: match[3],
-        port: match[4],
-        pathname: match[5],
-        nonce: match[6],
-        unsecure: match[7]
-      };
-    }
-    
+            navigator.getUserMedia = (navigator.getUserMedia ||
+                navigator.webkitGetUserMedia ||
+                navigator.mozGetUserMedia ||
+                navigator.msGetUserMedia);
 
-    function createMessage(signature, pubKey, message) {
-      return {
-        uri: message,
-        address: pubKey,
-        signature: signature
-      };
-    }
+            navigator.getUserMedia(constraints,
 
-    function getBitIDSiteURI(parsed) {
-      return parsed.protocol + ":" + parsed.host + parsed.pathname;
-    }
+                // Success Callback
+                function(localMediaStream) {
+                    document.getElementById('about').style.display = 'none';
+                    // Get a reference to the video element on the page.
+                    var vid = document.getElementById('camera-stream');
 
-    function getSiteAddress(bitid) {
-        const parsed = parseURI(bitid);
-        const protocol = (parsed.unsecure != '') ? 'http://' : 'https://';
-        return protocol + parsed.host;
-    }
+                    // Create an object URL for the video stream and use this 
+                    // to set the video source.
+                    vid.src = window.URL.createObjectURL(localMediaStream);
 
-    function getCallBackURL(bitid) {
-      return getSiteAddress(bitid) + parseURI(bitid).pathname;
-    }
-
-    function generateBITIDAddress(wif, site_uri) {
-      
-        const keyPair = Bitcoin.BitcoinJS.ECPair.fromWIF(wif);
-        const phex = keyPair.d.toBuffer().toString('hex');
-        const hd = Bitcoin.BitcoinJS.HDNode.fromSeedHex(phex);
-            
-        const sha256URL = Bitcoin.BitcoinJS.crypto.sha256(site_uri);
-        const sha32uri = sha256URL.readInt32LE(1);
-        
-        const derived = hd.derivePath("m/0'/45342'/"+sha32uri+"/0");
-
-        return derived;
-    }
-    
-    function generateSignatureMessage(wif, address) {
-
-        const parsed = parseURI(address);
-
-        const site_uri = getBitIDSiteURI(parsed);
-        const derived = generateBITIDAddress(wif, site_uri);
-        const pubKeyAddress = derived.keyPair.getAddress();
-        
-        const message = parsed.href;
-        
-        // Sign the message
-        const keyPair = Bitcoin.BitcoinJS.ECPair.fromWIF(wif);
-        const privateKey = derived.keyPair.d.toBuffer(32);
-        const messagePrefix = Bitcoin.BitcoinJS.networks.bitcoin.messagePrefix;
-        const signedMessage = Bitcoin.Message.sign(message, messagePrefix, 
-            privateKey, derived.keyPair.compressed);
-        const signed = signedMessage.toString('base64');
-        
-        
-        const fullMessage = createMessage(signed, pubKeyAddress, message);
-        return fullMessage;
-    }
-
-    // =======================================================================
-    // Tethering - Send a wallet one of our public keys. xpub format.
-    // =======================================================================
-
-    function tether(wif, parsed) {
-        console.log('Tether ' + JSON.stringify(parsed));
-
-        const xpubB58 = getHDWalletDeterministicKey(wif).neutered().toBase58();
-        const callbackURL = parsed.post_back;
-        const bitidURI = parsed.bitid;
-        const reqObj = buildRequestMPKObject(xpubB58, bitidURI, parsed, wif);
-
-        const formData = arrayToQueryParams(reqObj);
-
-        console.log(formData);
-
-        $('#tetheringModal').modal();
-
-        $('#tetheringConfirm').click(function() {
-            snackBar('Tethering');
-
-            window.fetch(callbackURL, {
-                method: 'post',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                    _player = vid;
+                    _localMediaStream = localMediaStream;
+                    _canvas = document.getElementById('qr-canvas');
+                    _context = _canvas.getContext('2d');
+                    scanCode(true);
                 },
-                body: formData
-            }).then(function(responseText) {
-                console.log('Response from server ' + responseText);
-                snackBar('Success ' + responseText);
-            }).catch(function(error) {
-                snackBar('Error ' + error);
-            });
 
-            return true;
-        });
-    }
+                // Error Callback
+                function(err) {
+                    // Log the error to the console.
+                    console.log('The following error occurred when trying to use getUserMedia: ' + err);
+                }
+            );
+        }
 
-    function parseCommand(href) {
-      const params = href.split("|");
-      var result = {};
-      if(params.length >= 3) {
-        result = {
-          cmd: params[0],
-          service: params[1],
-          post_back: params[2]
+        function showResult(e) {
+            var resultData = e.data;
+
+            if (resultData.result !== false) {
+
+                navigator.vibrate(200);
+                processQRCode(resultData.result);
+
+                initHomePage();
+
+            } else {
+                // if not found, retry
+
+                document.getElementById('scans').innerHTML = resultData.error;
+
+                scanCode(false);
+            }
         };
 
-        // Add in the extra paramters.
-        for (var i = 4; i < params.length; i+=2) {
-            result[params[i-1]] = params[i];
+        function scanCode(wasSuccess) {
+
+            setTimeout(function() {
+
+                try {
+
+                    var width = _player.videoWidth;
+                    var height = _player.videoHeight;
+
+                    _canvas.width = width;
+                    _canvas.height = height;
+
+                    // capture current snapshot
+                    _context.drawImage(_player, 0, 0, width, height);
+
+                    var imageData = _context.getImageData(0, 0, width, height);
+
+                    // scan for QRCode
+                    const message = {
+                        cmd: 'process',
+                        width: width,
+                        height: height,
+                        imageData: imageData
+                    };
+
+                    qrcodeWorker.postMessage(message);
+                } catch (e) {
+                    console.log(e);
+                }
+
+            }, wasSuccess ? 2000 : 500);
+        };
+
+        function stopScanner() {
+            console.log('Switching off camera.');
+            _player.pause();
+            _player.src = "";
+            _localMediaStream.getTracks()[0].stop();
         }
-      }
-      return result;
-    };
 
-    function getHDWalletDeterministicKey(wif) {
-      
-      const keyPair = Bitcoin.BitcoinJS.ECPair.fromWIF(wif);
-      const phex = keyPair.d.toBuffer().toString('hex');
-      const hd = Bitcoin.BitcoinJS.HDNode.fromSeedHex(phex);
-      
-      const derivedByArgument = hd.derivePath("m/0");
-      return derivedByArgument;
-    }
+        // Decide what type of QR code this is i.e. BITID or transaction
+        // signing and process.
+        function processQRCode(data) {
+            if (/^(bitid:).*$/.test(data) === true) {
+                processBITID(data);
+            } else if (data.split("|").length > 3 === true) {
+                parsed = parseCommand(data);
+                console.log('Command ' + parsed.cmd);
+                if (parsed.cmd == 'mpk') {
+                    tether(toWif(), parsed);
+                }
+                if (parsed.cmd == 'sign') {
+                    signTransaction(toWif(), parsed);
+                }
+            } else {
+                snackBar(data);
+            }
+        };
+        // End - QR code scanner
 
-    function buildRequestMPKObject(mpk, site_uri, parsed, wif) {
-        // Clone the parsed results.
-        var result = JSON.parse(JSON.stringify(parsed));
-        // remove the suff we don't want to send back
-        delete result['cmd'];
-        delete result['service'];
-        delete result['post_back'];
-        result['mpk'] = mpk;
-
-        // We add in a bit ID address so the user can use CarbonKey to login. 
-        if(site_uri != undefined) {
-            result['bitid_address'] = generateBITIDAddress(wif, site_uri).keyPair.getAddress();
+        function toWif() {
+            var words = window.localStorage.getItem("bip39");
+            var seed = Bitcoin.Bip39.mnemonicToSeedHex(words);
+            var hd = Bitcoin.BitcoinJS.HDNode.fromSeedHex(seed);
+            return hd.keyPair.toWIF();
         }
-        return result;
-    }
 
-    function arrayToQueryParams(arr) {
-        var str = [];
-        for(var p in arr)
-            str.push(encodeURIComponent(p) + "=" + encodeURIComponent(arr[p]));
-        return str.join("&");
-    }
+        // =======================================================================
+        // Functions necessary for BITID authentification.
+        // BITID is a protocol for authentication. https://github.com/bitid/bitid
+        // =======================================================================
 
-    // =======================================================================
-    // Transaction Signing.
-    // 1. Get the transaction from Carbon Wallet
-    // 2. Sign the inputs
-    // 3. Send the signatures back.
-    // =======================================================================
+        function processBITID(bitid_qr_code) {
 
-    function signTransaction(wif, parsed) {
+            console.log(bitid_qr_code);
 
-        const call_back = parsed.post_back + '?' + arrayToQueryParams(parsed)
-        
-        console.log('Signing Call Back ' + call_back);
+            const msg = generateSignatureMessage(toWif(), bitid_qr_code);
 
-        window.fetch(call_back).then(function(response) {
-            return response.text().then(function(text) {
+            console.log(msg);
 
-                const signedSigList = signSigList(wif, text);
+            $('#bitidModal').modal();
 
-                const requestParamters = buildSignRequest(signedSigList, parsed);
-                const formData = arrayToQueryParams(requestParamters);
+            $('#bitidConfirm').click(function() {
+                snackBar('Authenticating');
 
-                console.log(formData);
+                window.fetch(getCallBackURL(bitid_qr_code), {
+                    method: 'post',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(msg)
+                }).then(function(response) {
+                    var contentType = response.headers.get("content-type");
+                    if (contentType && contentType.includes("application/json")) {
+                        return response.json();
+                    }
+                    throw new TypeError("Oops, we haven't got JSON! ");
+                }).then(function(json) {
+                    if (json.message != null)
+                        throw ('Message Error ' + json.message);
 
-                // It's signed (Hopefully) send the signatures back.
-                window.fetch(call_back, {
+                    return json
+                }).then(function(json) {
+                    console.log(JSON.stringify(json));
+                    snackBar('Success ' + JSON.stringify(json));
+                }).catch(function(error) {
+                    snackBar('Error ' + error);
+                });
+
+                return true;
+            });
+        };
+
+        function parseURI(address) {
+            const reURLInformation = new RegExp([
+                '^(bitid)://', // protocol
+                '(([^:/?#]*)(?::([0-9]+))?)', // host (hostname and port)
+                '(/[^?#]*)', // pathname
+                '.x=([^\\&u=]*|)', // NONCE
+                '.(u=[^#]*|)' // IS UNSECURE
+            ].join(''));
+            const match = address.match(reURLInformation);
+            return match && {
+                href: address,
+                protocol: match[1],
+                host: match[2],
+                hostname: match[3],
+                port: match[4],
+                pathname: match[5],
+                nonce: match[6],
+                unsecure: match[7]
+            };
+        }
+
+        function createMessage(signature, pubKey, message) {
+            return {
+                uri: message,
+                address: pubKey,
+                signature: signature
+            };
+        }
+
+        function getBitIDSiteURI(parsed) {
+            return parsed.protocol + ":" + parsed.host + parsed.pathname;
+        }
+
+        function getSiteAddress(bitid) {
+            const parsed = parseURI(bitid);
+            const protocol = (parsed.unsecure != '') ? 'http://' : 'https://';
+            return protocol + parsed.host;
+        }
+
+        function getCallBackURL(bitid) {
+            return getSiteAddress(bitid) + parseURI(bitid).pathname;
+        }
+
+        function generateBITIDAddress(wif, site_uri) {
+
+            const keyPair = Bitcoin.BitcoinJS.ECPair.fromWIF(wif);
+            const phex = keyPair.d.toBuffer().toString('hex');
+            const hd = Bitcoin.BitcoinJS.HDNode.fromSeedHex(phex);
+
+            const sha256URL = Bitcoin.BitcoinJS.crypto.sha256(site_uri);
+            const sha32uri = sha256URL.readInt32LE(1);
+
+            const derived = hd.derivePath("m/0'/45342'/" + sha32uri + "/0");
+
+            return derived;
+        }
+
+        function generateSignatureMessage(wif, address) {
+
+            const parsed = parseURI(address);
+
+            const site_uri = getBitIDSiteURI(parsed);
+            const derived = generateBITIDAddress(wif, site_uri);
+            const pubKeyAddress = derived.keyPair.getAddress();
+
+            const message = parsed.href;
+
+            // Sign the message
+            const keyPair = Bitcoin.BitcoinJS.ECPair.fromWIF(wif);
+            const privateKey = derived.keyPair.d.toBuffer(32);
+            const messagePrefix = Bitcoin.BitcoinJS.networks.bitcoin.messagePrefix;
+            const signedMessage = Bitcoin.Message.sign(message, messagePrefix,
+                privateKey, derived.keyPair.compressed);
+            const signed = signedMessage.toString('base64');
+
+            const fullMessage = createMessage(signed, pubKeyAddress, message);
+            return fullMessage;
+        }
+
+        // =======================================================================
+        // Tethering - Send a wallet one of our public keys. xpub format.
+        // =======================================================================
+
+        function tether(wif, parsed) {
+            console.log('Tether ' + JSON.stringify(parsed));
+
+            const xpubB58 = getHDWalletDeterministicKey(wif).neutered().toBase58();
+            const callbackURL = parsed.post_back;
+            const bitidURI = parsed.bitid;
+            const reqObj = buildRequestMPKObject(xpubB58, bitidURI, parsed, wif);
+
+            const formData = arrayToQueryParams(reqObj);
+
+            console.log(formData);
+
+            $('#tetheringModal').modal();
+
+            $('#tetheringConfirm').click(function() {
+                snackBar('Tethering');
+
+                window.fetch(callbackURL, {
                     method: 'post',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
                     },
                     body: formData
-                }).then(function(response) {
-                    return response.text().then(function(text) {
-
-                        console.log('Response from server ' + text);
-                        snackBar('Success ' + text);
-                    })
+                }).then(function(responseText) {
+                    console.log('Response from server ' + responseText);
+                    snackBar('Success ' + responseText);
                 }).catch(function(error) {
                     snackBar('Error ' + error);
                 });
 
-            })
-
-        }).catch(function(error) {
-            snackBar('Error ' + error);
-        });
-    }
-
-    function buildSignRequest(signedSigList, parsed) {
-        // Clone the parsed results.
-        var result = JSON.parse(JSON.stringify(parsed));
-        // remove the suff we don't want to send back
-        delete result['cmd'];
-        delete result['service'];
-        delete result['post_back'];
-        result['meta_data'] = signedSigList;
-
-        return result;
-    }
-
-    function signSigList(wif, transactionAndSigListText) {
-      
-        if(transactionAndSigListText.indexOf(':') == -1)
-            throw('Error, invalid Transaction');
-
-        const sigList = JSON.parse(transactionAndSigListText.substring(
-            transactionAndSigListText.indexOf(':') + 1, 
-            transactionAndSigListText.length));
-
-        const pk = getHDWalletDeterministicKey(wif);
-        return JSON.stringify(signSignatureList(pk.keyPair, sigList));
-    };
-
-
-    function signSignatureList(key, sig_list) {
-      
-        var address = key.getAddress();
-        var full_address = key.getPublicKeyBuffer().toString('hex');
-        
-        for(var x = 0; x < sig_list.length; x++) {
-            
-            // Sometime the sig list has a full public address
-            // sometimes a hashed address. We can sign for both.
-            if(sig_list[x][address] != null) {
-                const hash = sig_list[x][address]['hash'];
-                
-                const hash_buff = Bitcoin.Buffer.from(hash, 'hex');
-                
-                const signed_hash = key.sign(hash_buff).toDER().toString("hex");
-                
-                sig_list[x][address]['sig'] = signed_hash;
-
-            } else if(sig_list[x][full_address] != null) {
-                const hash = sig_list[x][full_address]['hash'];
-                
-                const hash_buff = Bitcoin.Buffer.from(hash, 'hex');
-                
-                const signed_hash = key.sign(hash_buff).toDER().toString("hex");
-                
-                sig_list[x][full_address]['sig'] = signed_hash;
-            }
+                return true;
+            });
         }
-        return sig_list;
-    }
-    </script>
-    
-  </head>
 
-  <body>
+        function parseCommand(href) {
+            const params = href.split("|");
+            var result = {};
+            if (params.length >= 3) {
+                result = {
+                    cmd: params[0],
+                    service: params[1],
+                    post_back: params[2]
+                };
+
+                // Add in the extra paramters.
+                for (var i = 4; i < params.length; i += 2) {
+                    result[params[i - 1]] = params[i];
+                }
+            }
+            return result;
+        };
+
+        function getHDWalletDeterministicKey(wif) {
+
+            const keyPair = Bitcoin.BitcoinJS.ECPair.fromWIF(wif);
+            const phex = keyPair.d.toBuffer().toString('hex');
+            const hd = Bitcoin.BitcoinJS.HDNode.fromSeedHex(phex);
+
+            const derivedByArgument = hd.derivePath("m/0");
+            return derivedByArgument;
+        }
+
+        function buildRequestMPKObject(mpk, site_uri, parsed, wif) {
+            // Clone the parsed results.
+            var result = JSON.parse(JSON.stringify(parsed));
+            // remove the suff we don't want to send back
+            delete result['cmd'];
+            delete result['service'];
+            delete result['post_back'];
+            result['mpk'] = mpk;
+
+            // We add in a bit ID address so the user can use CarbonKey to login. 
+            if (site_uri != undefined) {
+                result['bitid_address'] = generateBITIDAddress(wif, site_uri).keyPair.getAddress();
+            }
+            return result;
+        }
+
+        function arrayToQueryParams(arr) {
+            var str = [];
+            for (var p in arr)
+                str.push(encodeURIComponent(p) + "=" + encodeURIComponent(arr[p]));
+            return str.join("&");
+        }
+
+        // =======================================================================
+        // Transaction Signing.
+        // 1. Get the transaction from Carbon Wallet
+        // 2. Sign the inputs
+        // 3. Send the signatures back.
+        // =======================================================================
+
+        function signTransaction(wif, parsed) {
+
+            const call_back = parsed.post_back + '?' + arrayToQueryParams(parsed)
+
+            console.log('Signing Call Back ' + call_back);
+
+            window.fetch(call_back).then(function(response) {
+                return response.text().then(function(text) {
+
+                    const signedSigList = signSigList(wif, text);
+
+                    const requestParamters = buildSignRequest(signedSigList, parsed);
+                    const formData = arrayToQueryParams(requestParamters);
+
+                    console.log(formData);
+
+                    // It's signed (Hopefully) send the signatures back.
+                    window.fetch(call_back, {
+                        method: 'post',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                        },
+                        body: formData
+                    }).then(function(response) {
+                        return response.text().then(function(text) {
+
+                            console.log('Response from server ' + text);
+                            snackBar('Success ' + text);
+                        })
+                    }).catch(function(error) {
+                        snackBar('Error ' + error);
+                    });
+
+                })
+
+            }).catch(function(error) {
+                snackBar('Error ' + error);
+            });
+        }
+
+        function buildSignRequest(signedSigList, parsed) {
+            // Clone the parsed results.
+            var result = JSON.parse(JSON.stringify(parsed));
+            // remove the suff we don't want to send back
+            delete result['cmd'];
+            delete result['service'];
+            delete result['post_back'];
+            result['meta_data'] = signedSigList;
+
+            return result;
+        }
+
+        function signSigList(wif, transactionAndSigListText) {
+
+            if (transactionAndSigListText.indexOf(':') == -1)
+                throw ('Error, invalid Transaction');
+
+            const sigList = JSON.parse(transactionAndSigListText.substring(
+                transactionAndSigListText.indexOf(':') + 1,
+                transactionAndSigListText.length));
+
+            const pk = getHDWalletDeterministicKey(wif);
+            return JSON.stringify(signSignatureList(pk.keyPair, sigList));
+        };
+
+        function signSignatureList(key, sig_list) {
+
+            var address = key.getAddress();
+            var full_address = key.getPublicKeyBuffer().toString('hex');
+
+            for (var x = 0; x < sig_list.length; x++) {
+
+                // Sometime the sig list has a full public address
+                // sometimes a hashed address. We can sign for both.
+                if (sig_list[x][address] != null) {
+                    const hash = sig_list[x][address]['hash'];
+
+                    const hash_buff = Bitcoin.Buffer.from(hash, 'hex');
+
+                    const signed_hash = key.sign(hash_buff).toDER().toString("hex");
+
+                    sig_list[x][address]['sig'] = signed_hash;
+
+                } else if (sig_list[x][full_address] != null) {
+                    const hash = sig_list[x][full_address]['hash'];
+
+                    const hash_buff = Bitcoin.Buffer.from(hash, 'hex');
+
+                    const signed_hash = key.sign(hash_buff).toDER().toString("hex");
+
+                    sig_list[x][full_address]['sig'] = signed_hash;
+                }
+            }
+            return sig_list;
+        }
+    </script>
+
+</head>
+
+<body>
 
     <nav class="navbar navbar-expand-md navbar-dark fixed-top">
-      <a class="navbar-brand" href="#" id="brand">Carbon Key</a>
-      <button id="navButton" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#carbonNav" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+        <a class="navbar-brand" href="#" id="brand">Carbon Key</a>
+        <button id="navButton" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#carbonNav" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-      <div class="collapse navbar-collapse" id="carbonNav">
-        <ul class="navbar-nav">
-          <li class="nav-item active">
-            <a id="home-link" class="nav-link" href="#">Home</a>
-          </li>
-          <li class="nav-item">
-            <a id="backup-link" class="nav-link" href="#backup">Backup</a>
-          </li>
-          <li class="nav-item">
-            <a id="restore-link" class="nav-link" href="#restore">Restore</a>
-          </li>
-          <li class="nav-item">
-            <a id="about-link" class="nav-link" href="#about">About</a>
-          </li>
-        </ul>
-      </div>
+        <div class="collapse navbar-collapse" id="carbonNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a id="home-link" class="nav-link" href="#">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a id="backup-link" class="nav-link" href="#backup">Backup</a>
+                </li>
+                <li class="nav-item">
+                    <a id="restore-link" class="nav-link" href="#restore">Restore</a>
+                </li>
+                <li class="nav-item">
+                    <a id="about-link" class="nav-link" href="#about">About</a>
+                </li>
+            </ul>
+        </div>
     </nav>
 
     <main role="main" class="container-fluid">
 
+        <!--
+        *
+        * Hoem page.
+        *
+        -->
+
         <div class="page mt-5 text-center" id="home">
             <div class="top">
                 <h2>Scan the QR code on <span>CarbonWallet.com</span></h2>
-                <p><img src="../img/qr-phone.png"></img></p>
+                <p><img src="../img/qr-phone.png"></img>
+                </p>
             </div>
             <div class="bottom"></div>
             <button id="scan-button" class="btn btn-bottom">Scan QR Code</button>
         </div>
-      
+
+        <!--
+        *
+        * Backup page
+        *
+        -->
+
         <div class="page mt-5" id="backup" style="display: none">
 
             <div class="screen-container-top text-center">
+                <!-- Backup icon. We embed svg to save on the number of external file dependencies. -->
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 1000 1000" enable-background="new 0 0 1000 1000" xml:space="preserve">
-                    <g><path d="M570,80c116.7,0,215.8,40.8,297.5,122.5C949.2,284.2,990,383.3,990,500s-40.8,215.8-122.5,297.5C785.8,879.2,686.7,920,570,920c-96.3,0-181.6-29.2-255.9-87.5l65.6-65.6C438,806.3,501.4,826,570,826c90.4,0,167.3-31.7,230.8-95.2s95.2-140.4,95.2-230.8c0-90.4-31.7-167.3-95.2-230.8c-63.4-63.4-140.4-95.2-230.8-95.2c-90.4,0-167.3,31.7-230.8,95.2C275.8,332.7,244,409.6,244,500h140L195.9,686L10,500h140c0-116.7,40.8-215.8,122.5-297.5C354.2,120.9,453.4,80,570,80L570,80z M664.1,500c0,24.8-9.5,46.7-28.4,65.6C616.7,584.6,594.8,594,570,594c-24.8,0-46.7-9.5-65.6-28.4C485.5,546.7,476,524.8,476,500c0-24.8,9.5-46.7,28.4-65.6c18.9-18.9,40.8-28.4,65.6-28.4c24.8,0,46.7,9.5,65.6,28.4C654.6,453.3,664.1,475.2,664.1,500z"/></g>
+                    <g>
+                        <path d="M570,80c116.7,0,215.8,40.8,297.5,122.5C949.2,284.2,990,383.3,990,500s-40.8,215.8-122.5,297.5C785.8,879.2,686.7,920,570,920c-96.3,0-181.6-29.2-255.9-87.5l65.6-65.6C438,806.3,501.4,826,570,826c90.4,0,167.3-31.7,230.8-95.2s95.2-140.4,95.2-230.8c0-90.4-31.7-167.3-95.2-230.8c-63.4-63.4-140.4-95.2-230.8-95.2c-90.4,0-167.3,31.7-230.8,95.2C275.8,332.7,244,409.6,244,500h140L195.9,686L10,500h140c0-116.7,40.8-215.8,122.5-297.5C354.2,120.9,453.4,80,570,80L570,80z M664.1,500c0,24.8-9.5,46.7-28.4,65.6C616.7,584.6,594.8,594,570,594c-24.8,0-46.7-9.5-65.6-28.4C485.5,546.7,476,524.8,476,500c0-24.8,9.5-46.7,28.4-65.6c18.9-18.9,40.8-28.4,65.6-28.4c24.8,0,46.7,9.5,65.6,28.4C654.6,453.3,664.1,475.2,664.1,500z" />
+                    </g>
                 </svg>
                 <h2>To backup your key write down the passphrase below.</h2>
             </div>
 
             <div class="screen-container-btm text-center">
 
-                <svg class="down-arrow" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-                    viewBox="0 0 255 255" xml:space="preserve">
-                <g>
-                    <g id="arrow-drop-down">
-                        <polygon points="0,0 127.5,191.25 255,0 		"/>
-                    </g>
+                <svg class="down-arrow" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 255 255" xml:space="preserve">
+                    <g>
+                        <g id="arrow-drop-down">
+                            <polygon points="0,0 127.5,191.25 255,0 		" />
+                        </g>
                 </svg>
 
                 <h3 id="backup-seed" class="text-center"></h3>
-                <p class="important"><span class="exclaim">Important</span> : 
-                    If you don't backup your keys you will lose access to 
-                    any services that use the key.</p>
+                <p class="important"><span class="exclaim">Important</span> : If you don't backup your keys you will lose access to any services that use the key.</p>
             </div>
-  
+
         </div>
-      
+
+        <!--
+        *
+        * Restore from 12 word key page.
+        *
+        -->
+
         <div class="page mt-5" id="restore" style="display: none">
             <div class="screen-container-top text-center">
 
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                    <path style="text-indent:0;text-align:start;line-height:normal;text-transform:none;block-progression:tb;-inkscape-font-specification:Bitstream Vera Sans" d="M 20 3 C 15.054545 3 11 7.0545455 11 12 C 11 12.519086 11.08466 12.978272 11.15625 13.4375 L 3.28125 21.28125 L 3 21.59375 L 3 22 L 3 28 L 3 29 L 4 29 L 9 29 L 10 29 L 10 28 L 10 26 L 12 26 L 13 26 L 13 25 L 13 23 L 15 23 L 16 23 L 16 22 L 16 20.03125 C 17.181148 20.608598 18.555233 21 20 21 C 24.945455 21 29 16.945455 29 12 C 29 7.0545455 24.945455 3 20 3 z M 20 5 C 23.854545 5 27 8.1454545 27 12 C 27 15.854545 23.854545 19 20 19 C 18.790476 19 17.544638 18.643666 16.59375 18.125 L 16.34375 18 L 16.09375 18 L 15 18 L 14 18 L 14 19 L 14 21 L 12 21 L 11 21 L 11 22 L 11 24 L 9 24 L 8 24 L 8 25 L 8 27 L 5 27 L 5 22.4375 L 12.90625 14.5 L 13.28125 14.15625 L 13.1875 13.625 C 13.0875 13.025 13 12.488889 13 12 C 13 8.1454545 16.145455 5 20 5 z M 22 8 C 20.895431 8 20 8.8954305 20 10 C 20 11.104569 20.895431 12 22 12 C 23.104569 12 24 11.104569 24 10 C 24 8.8954305 23.104569 8 22 8 z" overflow="visible" font-family="Bitstream Vera Sans"/>
+                    <path style="text-indent:0;text-align:start;line-height:normal;text-transform:none;block-progression:tb;-inkscape-font-specification:Bitstream Vera Sans" d="M 20 3 C 15.054545 3 11 7.0545455 11 12 C 11 12.519086 11.08466 12.978272 11.15625 13.4375 L 3.28125 21.28125 L 3 21.59375 L 3 22 L 3 28 L 3 29 L 4 29 L 9 29 L 10 29 L 10 28 L 10 26 L 12 26 L 13 26 L 13 25 L 13 23 L 15 23 L 16 23 L 16 22 L 16 20.03125 C 17.181148 20.608598 18.555233 21 20 21 C 24.945455 21 29 16.945455 29 12 C 29 7.0545455 24.945455 3 20 3 z M 20 5 C 23.854545 5 27 8.1454545 27 12 C 27 15.854545 23.854545 19 20 19 C 18.790476 19 17.544638 18.643666 16.59375 18.125 L 16.34375 18 L 16.09375 18 L 15 18 L 14 18 L 14 19 L 14 21 L 12 21 L 11 21 L 11 22 L 11 24 L 9 24 L 8 24 L 8 25 L 8 27 L 5 27 L 5 22.4375 L 12.90625 14.5 L 13.28125 14.15625 L 13.1875 13.625 C 13.0875 13.025 13 12.488889 13 12 C 13 8.1454545 16.145455 5 20 5 z M 22 8 C 20.895431 8 20 8.8954305 20 10 C 20 11.104569 20.895431 12 22 12 C 23.104569 12 24 11.104569 24 10 C 24 8.8954305 23.104569 8 22 8 z" overflow="visible" font-family="Bitstream Vera Sans" />
                 </svg>
-                    
+
                 <h2>Enter your twelve word backup phrase.</h2>
             </div>
 
             <div class="screen-container-btm text-center">
-                <svg class="down-arrow" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-                    viewBox="0 0 255 255" xml:space="preserve">
-                <g>
-                    <g id="arrow-drop-down">
-                        <polygon points="0,0 127.5,191.25 255,0 		"/>
-                    </g>
+                <svg class="down-arrow" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 255 255" xml:space="preserve">
+                    <g>
+                        <g id="arrow-drop-down">
+                            <polygon points="0,0 127.5,191.25 255,0 		" />
+                        </g>
                 </svg>
                 <textarea class="form-control" id="restore-words"></textarea>
+                <button id="restore-button" class="btn btn-normal mt-5">Restore Key</button>
             </div>
-            <button id="restore-button" class="btn btn-bottom">Restore Key</button>
         </div>
-      
+
+        <!--
+        *
+        * The scanner
+        *
+        -->
+
         <div class="page mt-5" id="scanner" style="display: none">
             <br />
             <br />
@@ -785,26 +806,44 @@
 
             <div id="snapshotLimitOverlay">
                 <div id="about">
-                    <p>Attempting to initialise camera<br /></p>
+                    <p>Attempting to initialise camera
+                        <br />
+                    </p>
                 </div>
             </div>
             <canvas id="qr-canvas" width=800 height=600></canvas>
         </div>
 
+        <!--
+        *
+        * About page. A few stats i.e. BITID address. Useful for support.
+        *
+        -->
+
         <div class="page mt-5" id="about-page" style="display: none">
             <div class="screen-container-top text-center">
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 1000 1000" enable-background="new 0 0 1000 1000" xml:space="preserve">
-                <metadata> Svg Vector Icons : http://www.onlinewebfonts.com/icon </metadata>
-                <g><g transform="translate(0.000000,511.000000) scale(0.100000,-0.100000)"><path d="M234,4052.3c-143.4-112.3-133.9,98-133.9-3324.7c0-2939.9,2.4-3143.1,43-3222c86-176.9-33.5-167.3,2246.8-167.3h2036.4v-215.1v-212.7l-941.7-7.2c-1130.6-9.6-1032.6,21.5-1166.4-356.1c-93.2-265.3-107.6-353.8-62.1-399.2c40.6-40.6,5447.2-40.6,5487.8,0c45.4,45.4,31.1,133.8-62.1,399.2c-133.9,377.6-35.9,346.6-1166.4,356.1l-941.7,7.2v212.7v215.1h2038.8c2277.8,0,2158.3-9.6,2244.4,167.3c40.6,78.9,43,282,43,3222c0,3422.7,9.6,3212.4-133.8,3324.7l-64.5,50.2H5000H298.5L234,4052.3z M9297.5,966.6l-7.2-2540.8H5000H709.6l-7.2,2540.8l-4.8,2538.4H5000h4302.3L9297.5,966.6z M5368.1-1982.9c40.6-38.3,50.2-145.8,19.1-193.6c-33.5-55-153-78.9-387.2-78.9c-325.1,0-406.3,33.5-406.3,172.1c0,124.3,43,138.6,406.3,138.6C5270.1-1944.7,5339.4-1951.8,5368.1-1982.9z"/><path d="M1971.6,3074.7c-105.2-43-124.3-164.9-40.6-251c55-52.6,1350.4-52.6,1405.4,0c86,88.4,64.5,210.3-47.8,251C3212.1,3103.4,2043.3,3103.4,1971.6,3074.7z"/><path d="M4593.7,3067.5c-76.5-38.2-95.6-167.3-33.5-234.2c40.6-43,100.4-45.4,1814.2-45.4c1732.9,0,1773.5,0,1816.5,47.8c52.6,57.4,55,160.1,2.4,210.3c-35.8,38.2-196,40.6-1790.2,45.4C5028.7,3096.2,4641.5,3091.4,4593.7,3067.5z"/><path d="M1880.8,1724.3l-59.8-57.4v-870v-870l55-50.2c55-52.6,64.5-52.6,970.4-52.6h913.1l57.4,59.8l59.8,57.4v838.9c0,903.5-7.2,956.1-124.3,989.5c-31.1,7.2-451.7,14.3-934.6,14.3h-879.6L1880.8,1724.3z"/><path d="M4574.6,1721.9c-35.9-23.9-52.6-59.8-52.6-117.1c0-162.5-90.8-155.4,1854.8-155.4c1651.6,0,1752,2.4,1802.2,43c33.5,26.3,55,69.3,55,112.3s-21.5,86-55,112.3c-50.2,40.6-150.6,43-1802.2,43C4832.7,1760.1,4622.4,1755.3,4574.6,1721.9z"/><path d="M4562.6,1143.5c-50.2-55-52.6-179.3-4.8-219.9c55-45.4,3587.7-43,3633.1,2.4c55,57.4,55,167.3-2.4,222.3c-33.5,33.5-229.5,38.2-1811.8,38.2C4686.9,1186.5,4598.5,1184.1,4562.6,1143.5z"/><path d="M4565,586.5c-28.7-14.3-43-52.6-43-105.2c0-164.9-117.1-155.4,1847.6-155.4c975.2,0,1785.5,9.6,1799.8,19.1c62.2,40.6,83.7,121.9,52.6,191.2l-31.1,64.5l-1792.6,4.8C5210.3,610.4,4591.3,603.3,4565,586.5z"/><path d="M4677.3-175.9c-198.4-81.3-246.2-363.3-83.7-506.7l71.7-66.9H5392h726.6l74.1,62.1c40.6,33.5,86.1,100.4,100.4,150.6c23.9,76.5,19.1,107.6-21.5,198.4c-78.9,181.7-107.6,186.4-882,184.1C5023.9-154.4,4703.6-164,4677.3-175.9z"/></g></g>
+                    <metadata> Svg Vector Icons : http://www.onlinewebfonts.com/icon </metadata>
+                    <g>
+                        <g transform="translate(0.000000,511.000000) scale(0.100000,-0.100000)">
+                            <path d="M234,4052.3c-143.4-112.3-133.9,98-133.9-3324.7c0-2939.9,2.4-3143.1,43-3222c86-176.9-33.5-167.3,2246.8-167.3h2036.4v-215.1v-212.7l-941.7-7.2c-1130.6-9.6-1032.6,21.5-1166.4-356.1c-93.2-265.3-107.6-353.8-62.1-399.2c40.6-40.6,5447.2-40.6,5487.8,0c45.4,45.4,31.1,133.8-62.1,399.2c-133.9,377.6-35.9,346.6-1166.4,356.1l-941.7,7.2v212.7v215.1h2038.8c2277.8,0,2158.3-9.6,2244.4,167.3c40.6,78.9,43,282,43,3222c0,3422.7,9.6,3212.4-133.8,3324.7l-64.5,50.2H5000H298.5L234,4052.3z M9297.5,966.6l-7.2-2540.8H5000H709.6l-7.2,2540.8l-4.8,2538.4H5000h4302.3L9297.5,966.6z M5368.1-1982.9c40.6-38.3,50.2-145.8,19.1-193.6c-33.5-55-153-78.9-387.2-78.9c-325.1,0-406.3,33.5-406.3,172.1c0,124.3,43,138.6,406.3,138.6C5270.1-1944.7,5339.4-1951.8,5368.1-1982.9z" />
+                            <path d="M1971.6,3074.7c-105.2-43-124.3-164.9-40.6-251c55-52.6,1350.4-52.6,1405.4,0c86,88.4,64.5,210.3-47.8,251C3212.1,3103.4,2043.3,3103.4,1971.6,3074.7z" />
+                            <path d="M4593.7,3067.5c-76.5-38.2-95.6-167.3-33.5-234.2c40.6-43,100.4-45.4,1814.2-45.4c1732.9,0,1773.5,0,1816.5,47.8c52.6,57.4,55,160.1,2.4,210.3c-35.8,38.2-196,40.6-1790.2,45.4C5028.7,3096.2,4641.5,3091.4,4593.7,3067.5z" />
+                            <path d="M1880.8,1724.3l-59.8-57.4v-870v-870l55-50.2c55-52.6,64.5-52.6,970.4-52.6h913.1l57.4,59.8l59.8,57.4v838.9c0,903.5-7.2,956.1-124.3,989.5c-31.1,7.2-451.7,14.3-934.6,14.3h-879.6L1880.8,1724.3z" />
+                            <path d="M4574.6,1721.9c-35.9-23.9-52.6-59.8-52.6-117.1c0-162.5-90.8-155.4,1854.8-155.4c1651.6,0,1752,2.4,1802.2,43c33.5,26.3,55,69.3,55,112.3s-21.5,86-55,112.3c-50.2,40.6-150.6,43-1802.2,43C4832.7,1760.1,4622.4,1755.3,4574.6,1721.9z" />
+                            <path d="M4562.6,1143.5c-50.2-55-52.6-179.3-4.8-219.9c55-45.4,3587.7-43,3633.1,2.4c55,57.4,55,167.3-2.4,222.3c-33.5,33.5-229.5,38.2-1811.8,38.2C4686.9,1186.5,4598.5,1184.1,4562.6,1143.5z" />
+                            <path d="M4565,586.5c-28.7-14.3-43-52.6-43-105.2c0-164.9-117.1-155.4,1847.6-155.4c975.2,0,1785.5,9.6,1799.8,19.1c62.2,40.6,83.7,121.9,52.6,191.2l-31.1,64.5l-1792.6,4.8C5210.3,610.4,4591.3,603.3,4565,586.5z" />
+                            <path d="M4677.3-175.9c-198.4-81.3-246.2-363.3-83.7-506.7l71.7-66.9H5392h726.6l74.1,62.1c40.6,33.5,86.1,100.4,100.4,150.6c23.9,76.5,19.1,107.6-21.5,198.4c-78.9,181.7-107.6,186.4-882,184.1C5023.9-154.4,4703.6-164,4677.3-175.9z" />
+                        </g>
+                    </g>
                 </svg>
             </div>
             <div class="screen-container-btm text-center">
-                <svg class="down-arrow text-center" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-                    viewBox="0 0 255 255" xml:space="preserve">
-                <g>
-                    <g id="arrow-drop-down">
-                        <polygon points="0,0 127.5,191.25 255,0 		"/>
-                    </g>
+                <svg class="down-arrow text-center" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 255 255" xml:space="preserve">
+                    <g>
+                        <g id="arrow-drop-down">
+                            <polygon points="0,0 127.5,191.25 255,0 		" />
+                        </g>
                 </svg>
                 <div class="text-left">
                     <p>CarbonWallet BITID Address</p>
@@ -814,32 +853,31 @@
                 </div>
             </div>
 
-            <input id="fileChooser" type="file" accept="image/*" 
-                class="btn btn-bottom" style="bottom: 80px">
+            <input id="fileChooser" type="file" accept="image/*" class="btn btn-bottom" style="bottom: 80px">
         </div>
 
-    </main><!-- /.container -->
+    </main>
+    <!-- /.container -->
 
     <!-- BITID Confirmation Modal -->
 
     <div class="modal fade" id="bitidModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Authenticate</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                Authenticate with 
-                <span id="bitid-requester">https://carbonwallet.com</span>
-                ?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button id="bitidConfirm" type="button" data-dismiss="modal" class="btn btn-primary">Authenticate</button>
-            </div>
+                <div class="modal-header">
+                    <h5 class="modal-title">Authenticate</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Authenticate with
+                    <span id="bitid-requester">https://carbonwallet.com</span> ?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="bitidConfirm" type="button" data-dismiss="modal" class="btn btn-primary">Authenticate</button>
+                </div>
             </div>
         </div>
     </div>
@@ -849,21 +887,20 @@
     <div class="modal fade" id="tetheringModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Tethering</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                Tether Carbon Key with 
-                <span id="tethering-text">Carbon Wallet</span>
-                ?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button id="tetheringConfirm" type="button" data-dismiss="modal" class="btn btn-primary">Authenticate</button>
-            </div>
+                <div class="modal-header">
+                    <h5 class="modal-title">Tethering</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Tether Carbon Key with
+                    <span id="tethering-text">Carbon Wallet</span> ?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="tetheringConfirm" type="button" data-dismiss="modal" class="btn btn-primary">Authenticate</button>
+                </div>
             </div>
         </div>
     </div>
@@ -873,20 +910,19 @@
     <div class="modal fade" id="signingModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Sign Transaction</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                Sign this transaction
-                ?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button id="signingConfirm" type="button" data-dismiss="modal" class="btn btn-primary">Authenticate</button>
-            </div>
+                <div class="modal-header">
+                    <h5 class="modal-title">Sign Transaction</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Sign this transaction ?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="signingConfirm" type="button" data-dismiss="modal" class="btn btn-primary">Authenticate</button>
+                </div>
             </div>
         </div>
     </div>
@@ -895,36 +931,37 @@
     <script src="js/bootstrap.min.js"></script>
     <script src="js/bitcoinjs-lib.js"></script>
     <div id="snackbar">Some text some message..</div>
-    
+
     <script>
-    /* global navigator */
-    // Check to make sure the browser supports service workers
-    function sendMessage(message) {
-        
-        var messageChannel = new MessageChannel();
-        messageChannel.port1.onmessage = function(event) {
-            console.log("Response the SW : ", event.data);
+        /* global navigator */
+        // Check to make sure the browser supports service workers
+        function sendMessage(message) {
+
+            var messageChannel = new MessageChannel();
+            messageChannel.port1.onmessage = function(event) {
+                console.log("Response the SW : ", event.data);
+            }
+
+            navigator.serviceWorker.controller.postMessage(message, [messageChannel.port2]);
         }
 
-        navigator.serviceWorker.controller.postMessage(message, [messageChannel.port2]);
-    }
+        // Register the service worker that caches our files.
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker
+                .register('/service-worker.js')
+                .then(() => {
+                    console.log('Service worker registered');
+                })
+                .catch(err => {
+                    console.log('Service worker registration failed: ' + err);
+                });
+        }
 
-    // Register the service worker that caches our files.
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker
-            .register('/service-worker.js')
-            .then(() => {
-            console.log('Service worker registered');
-            })
-            .catch(err => {
-            console.log('Service worker registration failed: ' + err);
-            });
-    }
-
-    // A web worker for running the main QR code parsing on
-    // a background thread.
-    const qrcodeWorker = new Worker("qrcode-web-worker.js");
-    qrcodeWorker.addEventListener('message', showResult);
+        // A web worker for running the main QR code parsing on
+        // a background thread.
+        const qrcodeWorker = new Worker("qrcode-web-worker.js");
+        qrcodeWorker.addEventListener('message', showResult);
     </script>
-  </body>
+</body>
+
 </html>

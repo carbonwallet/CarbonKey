@@ -33,6 +33,15 @@ nav {
 	background-color: #1f1f1f;
 }
 
+.btn-normal {
+	padding:4px 26px;
+	background-color:#16b5dd;
+	text-transform:uppercase;
+	letter-spacing:.04em;
+	width:210px;
+	color: white;
+}
+
 .btn-bottom {
 	-webkit-transform:translateX(-50%);
 	-ms-transform:translateX(-50%);

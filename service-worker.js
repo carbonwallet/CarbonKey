@@ -1,4 +1,4 @@
-const CACHE_NAME = 'danny-dog';
+const CACHE_NAME = 'eddie-eagle';
 const urlsToCache = [
   '/',
   '/index.html',
