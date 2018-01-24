@@ -1,6 +1,6 @@
 # CarbonKey
 
-CarbonKey is used in conjuction with Carbon Wallet https://carbonwallet.com to create secure 2 of 2 multi signature bitcoin wallets where you are in charge of your private keys.
+CarbonKey is used in conjunction with Carbon Wallet https://carbonwallet.com to create secure 2 of 2 multi signature bitcoin wallets where you are in charge of your private keys.
 
 <table>
 <tr>
@@ -39,12 +39,12 @@ To backup your CarbonKey write down the twelve word backup text on the backup pa
 # How does CarbonKey work? (More Technical)
 
 1. Registration and login are performed with the BitID protocol. https://github.com/bitid/bitid
-2. Tethering. CarbonKey creates a HD wallet on ititialisation and sends an xpub key when requested.
+2. Tethering. CarbonKey creates a HD wallet on initialisation and sends an xpub key when requested.
 3. Transaction signing. Inputs are retrieved from the wallet provider and signed via the HD wallet.
 
 # Architecture
 
-CarbonKey is purposely designed to have minimal dependencies and does not have a build process. The app is deloyed from our website or your own as a Progressive Web App (PWA). https://en.wikipedia.org/wiki/Progressive_web_app
+CarbonKey is purposely designed to have minimal dependencies and does not have a build process. The app is deployed from our website or your own as a Progressive Web App (PWA). https://en.wikipedia.org/wiki/Progressive_web_app
 
 # Notes for currencies looking to partner with CarbonWallet
 
