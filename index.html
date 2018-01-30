@@ -36,9 +36,10 @@
                 snackBar('Ready');
             }
 
-            if (! window.location.hostname === "localhost" 
-                && ! window.location.hostname === "127.0.0.1")
-                $('#fileChooser').hide();
+            console.log()
+            if (! (window.location.hostname === "localhost")) {
+                $('#fileChooser').remove();
+            }
 
             $('#home-link').click(function() {
 
@@ -213,10 +214,17 @@
                             });
 
                             if (device.length > 1) {
+                                var deviceIndex = 1;
+
+                                // On iOS grab 1st camera its the rear.
+                                if (!!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform))
+                                    deviceIndex = 0;
+
                                 var constraints = {
                                     video: {
                                         mandatory: {
-                                            sourceId: device[1].deviceId ? device[1].deviceId : null
+                                            sourceId: device[deviceIndex].deviceId ? 
+                                                device[deviceIndex].deviceId : null
                                         }
                                     },
                                     audio: false
