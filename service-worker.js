@@ -1,4 +1,4 @@
-const CACHE_NAME = 'icy-ios';
+const CACHE_NAME = 'working-ios';
 const urlsToCache = [
   '/',
   '/index.html',
