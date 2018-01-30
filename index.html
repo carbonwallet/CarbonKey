@@ -36,7 +36,6 @@
                 snackBar('Ready');
             }
 
-            console.log()
             if (! (window.location.hostname === "localhost")) {
                 $('#fileChooser').remove();
             }
@@ -81,6 +80,8 @@
                 const xpub58 = getHDWalletDeterministicKey(toWif()).neutered().toBase58();
                 $('#xpub-address').text(xpub58.substr(xpub58.length - 8));
 
+                $('#isIOS').text(isIOS());
+
                 return false;
             });
             $('#scan-button').click(function() {
@@ -116,6 +117,10 @@
                 $('#fileChooser').val(null);
             });
         });
+
+        function isIOS() {
+            return !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+        }
 
         function initHomePage() {
             resetUI();
@@ -217,8 +222,10 @@
                                 var deviceIndex = 1;
 
                                 // On iOS grab 1st camera its the rear.
-                                if (!!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform))
+                                if (isIOS())
                                     deviceIndex = 0;
+
+                                snackBar('Device Index : ' + deviceIndex);
 
                                 var constraints = {
                                     video: {
@@ -859,6 +866,8 @@
                     <p id="bitid-address" class="text-truncate system-info"></p>
                     <p>XPUB Last 6 Digits.</p>
                     <p id="xpub-address" class="text-truncate system-info"></p>
+                    <p>iOS?</p>
+                    <p id="isIOS" class="system-info"></p>
                 </div>
             </div>
 
