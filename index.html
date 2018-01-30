@@ -36,7 +36,8 @@
                 snackBar('Ready');
             }
 
-            if (!location.hostname === "localhost" && !location.hostname === "127.0.0.1")
+            if (! window.location.hostname === "localhost" 
+                && ! window.location.hostname === "127.0.0.1")
                 $('#fileChooser').hide();
 
             $('#home-link').click(function() {
@@ -124,8 +125,8 @@
         // For those devices where we can't get the users camera directly.
         function doSomethingWithFiles(fileList) {
 
-            const imageData = URL.createObjectURL(fileList[0]);
-            img = new Image();
+            /* global Image */
+            var img = new Image();
             img.onload = function() {
                 console.log(this.width + " " + this.height);
 
@@ -345,7 +346,7 @@
             if (/^(bitid:).*$/.test(data) === true) {
                 processBITID(data);
             } else if (data.split("|").length > 3 === true) {
-                parsed = parseCommand(data);
+                var parsed = parseCommand(data);
                 console.log('Command ' + parsed.cmd);
                 if (parsed.cmd == 'mpk') {
                     tether(toWif(), parsed);
@@ -802,7 +803,7 @@
             <br />
             <br />
             <p id="scans">Waiting to scan...</p>
-            <video id="camera-stream" autoplay></video>
+            <video id="camera-stream" autoplay playsinline></video>
 
             <div id="snapshotLimitOverlay">
                 <div id="about">
@@ -932,7 +933,7 @@
     <div id="snackbar">Some text some message..</div>
 
     <script>
-        /* global navigator */
+        /* global navigator, showResult */
 
         // Register the service worker that caches our files.
         if ('serviceWorker' in navigator) {
