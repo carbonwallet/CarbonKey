@@ -264,36 +264,33 @@
 
         function startCapture(constraints) {
 
-            navigator.getUserMedia = (navigator.getUserMedia ||
-                navigator.webkitGetUserMedia ||
-                navigator.mozGetUserMedia ||
-                navigator.msGetUserMedia);
+            var success = function(localMediaStream) {
+                document.getElementById('about').style.display = 'none';
+                // Get a reference to the video element on the page.
+                var vid = document.getElementById('camera-stream');
 
-            navigator.getUserMedia(constraints,
+                // Create an object URL for the video stream and use this 
+                // to set the video source.
+                vid.srcObject = localMediaStream;
 
-                // Success Callback
-                function(localMediaStream) {
-                    document.getElementById('about').style.display = 'none';
-                    // Get a reference to the video element on the page.
-                    var vid = document.getElementById('camera-stream');
+                _player = vid;
+                _localMediaStream = localMediaStream;
+                _canvas = document.getElementById('qr-canvas');
+                _context = _canvas.getContext('2d');
+                scanCode(true);
+            }
 
-                    // Create an object URL for the video stream and use this 
-                    // to set the video source.
-                    vid.srcObject = localMediaStream;
+            var failure = function(err) {
+                // Log the error to the console.
+                snackBar('Error getUserMedia: ' + err);
+            }
 
-                    _player = vid;
-                    _localMediaStream = localMediaStream;
-                    _canvas = document.getElementById('qr-canvas');
-                    _context = _canvas.getContext('2d');
-                    scanCode(true);
-                },
+            // For iOS we have another of assuring we get the rear camera.
+            if(isIOS()) {
+                constraints = { audio: false, video: { facingMode: { exact: "environment" } } };
+            } 
 
-                // Error Callback
-                function(err) {
-                    // Log the error to the console.
-                    console.log('The following error occurred when trying to use getUserMedia: ' + err);
-                }
-            );
+            navigator.mediaDevices.getUserMedia(constraints).then(success).catch(failure);
         }
 
         function showResult(e) {
