@@ -264,7 +264,7 @@
 
                     // Create an object URL for the video stream and use this 
                     // to set the video source.
-                    vid.src = window.URL.createObjectURL(localMediaStream);
+                    vid.srcObject = localMediaStream;
 
                     _player = vid;
                     _localMediaStream = localMediaStream;
@@ -286,7 +286,8 @@
 
             if (resultData.result !== false) {
 
-                navigator.vibrate(200);
+                if(navigator.vibrate)
+                    navigator.vibrate(200);
                 processQRCode(resultData.result);
 
                 initHomePage();
