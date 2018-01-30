@@ -1,4 +1,4 @@
-const CACHE_NAME = 'geoffrey-godwell';
+const CACHE_NAME = 'icy-ios';
 const urlsToCache = [
   '/',
   '/index.html',
