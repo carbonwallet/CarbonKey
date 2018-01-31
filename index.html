@@ -44,6 +44,11 @@
             if (! (window.location.hostname === "localhost")) {
                 $('#fileChooser').remove();
             }
+            
+
+            if (isIOS()) {
+                $('#scan-button').remove();
+            }
 
             $('#home-link').click(function() {
 
