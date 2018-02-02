@@ -122,7 +122,17 @@
                 var words = $('#restore-words').val();
 
                 if (Bitcoin.Bip39.validateMnemonic(words)) {
+                    
+                    // Save the new key
                     window.localStorage.setItem("bip39", words);
+                    
+                    // And cache it.
+                    CarbonKeyWallet.words = words;
+                    const seed = Bitcoin.Bip39.mnemonicToSeedHex(CarbonKeyWallet.words);
+                    const hd = Bitcoin.BitcoinJS.HDNode.fromSeedHex(seed);
+                    CarbonKeyWallet.wif = hd.keyPair.toWIF();
+                    
+                    // Go home.
                     $('#home-link').trigger("click");
                 }
 
