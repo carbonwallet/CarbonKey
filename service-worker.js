@@ -1,4 +1,4 @@
-const CACHE_NAME = 'working-ios';
+const CACHE_NAME = 'jolly-localforage';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -7,6 +7,7 @@ const urlsToCache = [
   '/js/bitcoinjs-lib.js',
   '/js/bootstrap.min.js',
   '/js/jquery-3.2.1.slim.min.js',
+  '/js/localforage.js',
   '/js/popper.min.js',
   '/qrcode-web-worker.js',
 	'./img/qr-phone.png',
