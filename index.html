@@ -20,8 +20,9 @@
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
     <script src="js/jquery-3.2.1.slim.min.js"></script>
+    <script src="js/localforage.js"></script>
     <script>
-        /* global $, Bitcoin, qrcodeWorker, navigator */
+        /* global $, Bitcoin, qrcodeWorker, navigator, localforage */
         const CarbonKeyWallet = {};
         CarbonKeyWallet.wif = null;
         CarbonKeyWallet.words = null;
@@ -40,18 +41,35 @@
         // =======================================================================
 
         $(document).ready(function() {
-
-            if (window.localStorage.getItem("bip39") == null) {
-                initialise();
-            } else {
-                snackBar('Ready');
-            }
             
-            // Store our wallet details.
-            CarbonKeyWallet.words = window.localStorage.getItem("bip39");
-            const seed = Bitcoin.Bip39.mnemonicToSeedHex(CarbonKeyWallet.words);
-            const hd = Bitcoin.BitcoinJS.HDNode.fromSeedHex(seed);
-            CarbonKeyWallet.wif = hd.keyPair.toWIF();
+            localforage.getItem("seed_words").then(function(value) {
+                
+                if(value == null) {
+                    // Do we have an old seed from the before localforage days?
+                    const oldWords = window.localStorage.getItem("bip39");
+                    if (oldWords != null) {
+                        console.log('Migrating localstorage');
+                        // Let's transfer it over.
+                        localforage.setItem("seed_words", oldWords);
+                        populateCarbonKeyGlobals(oldWords);
+                    } else {
+                        // No old key. So we create a new one.
+                        var words = Bitcoin.Bip39.generateMnemonic();
+                        
+                        localforage.setItem('seed_words', words)
+                        .then(function (value) {
+                            populateCarbonKeyGlobals(value);
+                            snackBar('Success Initialising Key');
+                        }).catch(function (err) {
+                            snackBar('Problem ' + err);
+                        });
+                    }
+                } else {
+                    // localforage found our key.
+                    populateCarbonKeyGlobals(value);
+                    snackBar('Ready');
+                }
+            });
 
             if (! (window.location.hostname === "localhost")) {
                 $('#fileChooser').remove();
@@ -123,14 +141,16 @@
 
                 if (Bitcoin.Bip39.validateMnemonic(words)) {
                     
+                    // Backup the old key
+                    localforage.getItem("seed_words").then(function(value) {
+                        localforage.setItem(value, value);
+                    });
+                    
                     // Save the new key
-                    window.localStorage.setItem("bip39", words);
+                    localforage.setItem("seed_words", words);
                     
                     // And cache it.
-                    CarbonKeyWallet.words = words;
-                    const seed = Bitcoin.Bip39.mnemonicToSeedHex(CarbonKeyWallet.words);
-                    const hd = Bitcoin.BitcoinJS.HDNode.fromSeedHex(seed);
-                    CarbonKeyWallet.wif = hd.keyPair.toWIF();
+                    populateCarbonKeyGlobals(words);
                     
                     // Go home.
                     $('#home-link').trigger("click");
@@ -147,6 +167,13 @@
 
         function isIOS() {
             return !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+        }
+        
+        function populateCarbonKeyGlobals(seedWords) {
+            CarbonKeyWallet.words = seedWords;
+            const seed = Bitcoin.Bip39.mnemonicToSeedHex(CarbonKeyWallet.words);
+            const hd = Bitcoin.BitcoinJS.HDNode.fromSeedHex(seed);
+            CarbonKeyWallet.wif = hd.keyPair.toWIF();
         }
 
         function initHomePage() {
@@ -209,18 +236,6 @@
             setTimeout(function() {
                 x.className = x.className.replace("show", "");
             }, 2000);
-        }
-
-        // Called if no private key is set so far.  
-        function initialise() {
-            var words = Bitcoin.Bip39.generateMnemonic();
-            console.log(Bitcoin.Bip39.mnemonicToSeedHex(words));
-            try {
-                window.localStorage.setItem("bip39", words);
-                snackBar('Success Initialising Key');
-            } catch (e) {
-                snackBar('Problem ' + e);
-            }
         }
 
         // =======================================================================
