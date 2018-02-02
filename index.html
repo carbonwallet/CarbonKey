@@ -42,33 +42,42 @@
 
         $(document).ready(function() {
             
-            localforage.getItem("seed_words").then(function(value) {
+            // Get key from locastorage first
+            // then the database
+            // and failing that from the fragment identifier
+            localforage.getItem("seed_words").then(function(seed_words) {
                 
-                if(value == null) {
+                if(seed_words == null) {
+                    
                     // Do we have an old seed from the before localforage days?
                     const oldWords = window.localStorage.getItem("bip39");
+                    
                     if (oldWords != null) {
-                        console.log('Migrating localstorage');
-                        // Let's transfer it over.
-                        localforage.setItem("seed_words", oldWords);
-                        populateCarbonKeyGlobals(oldWords);
-                    } else {
-                        // No old key. So we create a new one.
-                        var words = Bitcoin.Bip39.generateMnemonic();
-                        
-                        localforage.setItem('seed_words', words)
-                        .then(function (value) {
-                            populateCarbonKeyGlobals(value);
-                            snackBar('Success Initialising Key');
-                        }).catch(function (err) {
-                            snackBar('Problem ' + err);
-                        });
-                    }
+                        snackBar('Wallet Migrated to new storage.');
+                        return oldWords;
+                    } 
+                    
+                    if(window.location.hash.length > 1) {
+                        snackBar('Wallet restored from URL fragment.');
+                        return window.location.hash.replace(/-/g, " ").replace(/#/g, "");
+                    } 
+                    
+                    // OK, let's generate a new one.
+                    return Bitcoin.Bip39.generateMnemonic();
+                } 
+                
+                snackBar('Ready.');
+                return seed_words;
+                
+            }).then(function(words) {
+                if (Bitcoin.Bip39.validateMnemonic(words)) {
+                    localforage.setItem("seed_words", words);
+                    window.location.hash = words.replace(/ /g, "-");
+                    populateCarbonKeyGlobals(words);
                 } else {
-                    // localforage found our key.
-                    populateCarbonKeyGlobals(value);
-                    snackBar('Ready.');
+                    snackBar('Invalid Mnemonic words.' + words);
                 }
+                
             });
 
             if (! (window.location.hostname === "localhost")) {
