@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jolly-jason';
+const CACHE_NAME = 'kobbly-kelly';
 const urlsToCache = [
   '.',
   'css/bootstrap.min.css',
