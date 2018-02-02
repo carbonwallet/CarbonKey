@@ -21,12 +21,18 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="js/jquery-3.2.1.slim.min.js"></script>
     <script>
-        var _scannerIsRunning = false;
-        var _player;
-        var _localMediaStream;
-        var _context;
-        /* global $ */
-        /* global Bitcoin */
+        /* global $, Bitcoin, qrcodeWorker, navigator */
+        const CarbonKeyWallet = {};
+        CarbonKeyWallet.wif = null;
+        CarbonKeyWallet.words = null;
+        
+        // Globals for the scanner. Should look at reducing this.
+        const QRScanner = {};
+        QRScanner.scannerIsRunning = false;
+        QRScanner.player = null;
+        QRScanner.localMediaStream = null;
+        QRScanner.context = null;
+        QRScanner.canvas = null;
 
         // =======================================================================
         // Use JQuery to create a lightweight UI.
@@ -40,6 +46,12 @@
             } else {
                 snackBar('Ready');
             }
+            
+            // Store our wallet details.
+            CarbonKeyWallet.words = window.localStorage.getItem("bip39");
+            const seed = Bitcoin.Bip39.mnemonicToSeedHex(CarbonKeyWallet.words);
+            const hd = Bitcoin.BitcoinJS.HDNode.fromSeedHex(seed);
+            CarbonKeyWallet.wif = hd.keyPair.toWIF();
 
             if (! (window.location.hostname === "localhost")) {
                 $('#fileChooser').remove();
@@ -60,7 +72,7 @@
                 $('#backup').show();
                 $('#brand').text('Backup');
 
-                $('#backup-seed').html(window.localStorage.getItem("bip39"));
+                $('#backup-seed').html(CarbonKeyWallet.words);
 
                 return false;
             });
@@ -80,9 +92,9 @@
 
                 var bitid = 'bitid://carbonwallet.com/bitid_callback?x=b49984ec90fe0762';
                 $('#bitid-address').text(
-                    generateSignatureMessage(toWif(), bitid).address);
+                    generateSignatureMessage(CarbonKeyWallet.wif, bitid).address);
 
-                const xpub58 = getHDWalletDeterministicKey(toWif()).neutered().toBase58();
+                const xpub58 = getHDWalletDeterministicKey(CarbonKeyWallet.wif).neutered().toBase58();
                 $('#xpub-address').text(xpub58.substr(xpub58.length - 8));
 
                 $('#isIOS').text(isIOS());
@@ -169,9 +181,9 @@
         function resetUI() {
             $('.page').hide();
 
-            if (_scannerIsRunning) {
+            if (QRScanner.scannerIsRunning) {
                 stopScanner();
-                _scannerIsRunning = false;
+                QRScanner.scannerIsRunning = false;
             }
         }
 
@@ -255,7 +267,7 @@
                         .catch(function(error) {
                             alert("Error occurred : ", error);
                         });
-                    _scannerIsRunning = true;
+                    QRScanner.scannerIsRunning = true;
 
                 } else {
                     alert('Sorry, your browser does not support getUserMedia');
@@ -276,17 +288,17 @@
                 // to set the video source.
                 vid.srcObject = localMediaStream;
 
-                _player = vid;
-                _localMediaStream = localMediaStream;
-                _canvas = document.getElementById('qr-canvas');
-                _context = _canvas.getContext('2d');
+                QRScanner.player = vid;
+                QRScanner.localMediaStream = localMediaStream;
+                QRScanner.canvas = document.getElementById('qr-canvas');
+                QRScanner.context = QRScanner.canvas.getContext('2d');
                 scanCode(true);
             }
 
             var failure = function(err) {
                 // Log the error to the console.
                 snackBar('Error getUserMedia: ' + err);
-            }
+            };
 
             // For iOS we have another of assuring we get the rear camera.
             if(isIOS()) {
@@ -314,7 +326,7 @@
 
                 scanCode(false);
             }
-        };
+        }
 
         function scanCode(wasSuccess) {
 
@@ -322,16 +334,16 @@
 
                 try {
 
-                    var width = _player.videoWidth;
-                    var height = _player.videoHeight;
+                    var width = QRScanner.player.videoWidth;
+                    var height = QRScanner.player.videoHeight;
 
-                    _canvas.width = width;
-                    _canvas.height = height;
+                    QRScanner.canvas.width = width;
+                    QRScanner.canvas.height = height;
 
                     // capture current snapshot
-                    _context.drawImage(_player, 0, 0, width, height);
+                    QRScanner.context.drawImage(QRScanner.player, 0, 0, width, height);
 
-                    var imageData = _context.getImageData(0, 0, width, height);
+                    var imageData = QRScanner.context.getImageData(0, 0, width, height);
 
                     // scan for QRCode
                     const message = {
@@ -347,13 +359,15 @@
                 }
 
             }, wasSuccess ? 2000 : 500);
-        };
+        }
 
         function stopScanner() {
             console.log('Switching off camera.');
-            _player.pause();
-            _player.src = "";
-            _localMediaStream.getTracks()[0].stop();
+            if(QRScanner.player) {
+                QRScanner.player.pause();
+                QRScanner.player.src = "";
+                QRScanner.localMediaStream.getTracks()[0].stop();
+            }
         }
 
         // Decide what type of QR code this is i.e. BITID or transaction
@@ -365,23 +379,16 @@
                 var parsed = parseCommand(data);
                 console.log('Command ' + parsed.cmd);
                 if (parsed.cmd == 'mpk') {
-                    tether(toWif(), parsed);
+                    tether(CarbonKeyWallet.wif, parsed);
                 }
                 if (parsed.cmd == 'sign') {
-                    signTransaction(toWif(), parsed);
+                    signTransaction(CarbonKeyWallet.wif, parsed);
                 }
             } else {
                 snackBar(data);
             }
-        };
-        // End - QR code scanner
-
-        function toWif() {
-            var words = window.localStorage.getItem("bip39");
-            var seed = Bitcoin.Bip39.mnemonicToSeedHex(words);
-            var hd = Bitcoin.BitcoinJS.HDNode.fromSeedHex(seed);
-            return hd.keyPair.toWIF();
         }
+        // End - QR code scanner
 
         // =======================================================================
         // Functions necessary for BITID authentification.
@@ -392,7 +399,7 @@
 
             console.log(bitid_qr_code);
 
-            const msg = generateSignatureMessage(toWif(), bitid_qr_code);
+            const msg = generateSignatureMessage(CarbonKeyWallet.wif, bitid_qr_code);
 
             console.log(msg);
 
@@ -418,7 +425,7 @@
                     if (json.message != null)
                         throw ('Message Error ' + json.message);
 
-                    return json
+                    return json;
                 }).then(function(json) {
                     console.log(JSON.stringify(json));
                     snackBar('Success ' + JSON.stringify(json));
@@ -428,7 +435,7 @@
 
                 return true;
             });
-        };
+        }
 
         function parseURI(address) {
             const reURLInformation = new RegExp([
@@ -498,7 +505,6 @@
             const message = parsed.href;
 
             // Sign the message
-            const keyPair = Bitcoin.BitcoinJS.ECPair.fromWIF(wif);
             const privateKey = derived.keyPair.d.toBuffer(32);
             const messagePrefix = Bitcoin.BitcoinJS.networks.bitcoin.messagePrefix;
             const signedMessage = Bitcoin.Message.sign(message, messagePrefix,
@@ -563,7 +569,7 @@
                 }
             }
             return result;
-        };
+        }
 
         function getHDWalletDeterministicKey(wif) {
 
@@ -607,7 +613,7 @@
 
         function signTransaction(wif, parsed) {
 
-            const call_back = parsed.post_back + '?' + arrayToQueryParams(parsed)
+            const call_back = parsed.post_back + '?' + arrayToQueryParams(parsed);
 
             console.log('Signing Call Back ' + call_back);
 
@@ -633,12 +639,12 @@
 
                             console.log('Response from server ' + text);
                             snackBar('Success ' + text);
-                        })
+                        });
                     }).catch(function(error) {
                         snackBar('Error ' + error);
                     });
 
-                })
+                });
 
             }).catch(function(error) {
                 snackBar('Error ' + error);
@@ -668,7 +674,7 @@
 
             const pk = getHDWalletDeterministicKey(wif);
             return JSON.stringify(signSignatureList(pk.keyPair, sigList));
-        };
+        }
 
         function signSignatureList(key, sig_list) {
 
