@@ -42,6 +42,14 @@
 
         $(document).ready(function() {
             
+            if (navigator.storage && navigator.storage.persist)
+              navigator.storage.persist().then(granted => {
+                if (granted)
+                  console.log("Storage will not be cleared except by explicit user action");
+                else
+                  console.log("Storage may be cleared by the UA under storage pressure.");
+              });
+            
             // Get key from locastorage first
             // then the database
             // and failing that from the fragment identifier
@@ -131,6 +139,12 @@
                 $('#xpub-address').text(xpub58.substr(xpub58.length - 8));
 
                 $('#isIOS').text(isIOS());
+                
+                if (navigator.storage && navigator.storage.persist) 
+                    navigator.storage.persisted().then(persistent=>{
+                        if (persistent)
+                             $('#isAndroidPersistant').text("Active");
+                    });
 
                 return false;
             });
@@ -916,6 +930,8 @@
                     <p id="xpub-address" class="text-truncate system-info"></p>
                     <p>iOS Device ?</p>
                     <p id="isIOS" class="system-info"></p>
+                    <p>Android Persistance ?</p>
+                    <p id="isAndroidPersistant" class="system-info">Inactive</p>
                 </div>
             </div>
 
