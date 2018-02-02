@@ -1,20 +1,19 @@
-const CACHE_NAME = 'jolly-localforage';
+const CACHE_NAME = 'jolly-jason';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/css/bootstrap.min.css',
-  '/css/style.css',
-  '/js/bitcoinjs-lib.js',
-  '/js/bootstrap.min.js',
-  '/js/jquery-3.2.1.slim.min.js',
-  '/js/localforage.js',
-  '/js/popper.min.js',
-  '/qrcode-web-worker.js',
-	'./img/qr-phone.png',
-	'./img/drawable-xhdpi-icon.png',
-	'./img/drawable-xxhdpi-icon.png',
-	'./img/drawable-xxxhdpi-icon.png',
-	'./img/qr-bg.jpg',
+  '.',
+  'css/bootstrap.min.css',
+  'css/style.css',
+  'js/bitcoinjs-lib.js',
+  'js/bootstrap.min.js',
+  'js/jquery-3.2.1.slim.min.js',
+  'js/localforage.js',
+  'js/popper.min.js',
+  'qrcode-web-worker.js',
+  'img/qr-phone.png',
+  'img/drawable-xhdpi-icon.png',
+  'img/drawable-xxhdpi-icon.png',
+  'img/drawable-xxxhdpi-icon.png',
+  'img/qr-bg.jpg',
 ];
 
 // Listen for the install event, which fires when the service worker is installing

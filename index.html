@@ -9,12 +9,12 @@
     <meta name="apple-mobile-web-app-title" content="CarbonKey">
 
     <title>CarbonKey</title>
-    <link rel="icon" type="image/png" href="/img/drawable-xhdpi-icon.png" sizes="96x96">
-    <link rel="apple-touch-icon" href="/img/drawable-xhdpi-icon.png">
-    <link rel="apple-touch-icon" sizes="96x96" href="/img/drawable-xhdpi-icon.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="/img/drawable-xxhdpi-icon.png">
-    <link rel="apple-touch-icon" sizes="192x192" href="/img/drawable-xxxhdpi-icon.png">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" href="img/drawable-xhdpi-icon.png" sizes="96x96">
+    <link rel="apple-touch-icon" href="img/drawable-xhdpi-icon.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="img/drawable-xhdpi-icon.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="img/drawable-xxhdpi-icon.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="img/drawable-xxxhdpi-icon.png">
+    <link rel="manifest" href="manifest.json">
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="css/bootstrap.min.css">
@@ -777,7 +777,7 @@
         <div class="page mt-5 text-center" id="home">
             <div class="top">
                 <h2>Scan the QR code on <span>CarbonWallet.com</span></h2>
-                <p><img src="../img/qr-phone.png"></img>
+                <p><img src="img/qr-phone.png"></img>
                 </p>
             </div>
             <div class="bottom"></div>
@@ -992,7 +992,7 @@
         // Register the service worker that caches our files.
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker
-                .register('/service-worker.js')
+                .register('service-worker.js')
                 .then(() => {
                     console.log('Service worker registered');
                 })
