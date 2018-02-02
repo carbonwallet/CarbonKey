@@ -1,4 +1,4 @@
-const CACHE_NAME = 'working-ios';
+const CACHE_NAME = 'jolly-localforage';
 const urlsToCache = [
   '/',
   '/index.html',
