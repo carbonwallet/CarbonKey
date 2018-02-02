@@ -168,6 +168,8 @@
                     
                     // Go home.
                     $('#home-link').trigger("click");
+                } else {
+                    $('#seedModal').modal();
                 }
 
                 return false;
@@ -924,7 +926,7 @@
 
     <!-- BITID Confirmation Modal -->
 
-    <div class="modal fade" id="bitidModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="bitidModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -947,7 +949,7 @@
 
     <!-- Tethering Confirmation Modal -->
 
-    <div class="modal fade" id="tetheringModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="tetheringModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -970,7 +972,7 @@
 
     <!-- Signing Confirmation Modal -->
 
-    <div class="modal fade" id="signingModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="signingModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -985,6 +987,27 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     <button id="signingConfirm" type="button" data-dismiss="modal" class="btn btn-primary">Authenticate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signing Confirmation Modal -->
+
+    <div class="modal fade" id="seedModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Invalid Backup Seed</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    This is not a valid backup seed.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
