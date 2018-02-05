@@ -1,6 +1,12 @@
 {
   "short_name": "CarbonKey",
-  "name": "CarbonKey from CarbonWallet",
+  "name": "CarbonKey",
+  "background_color": "#1f1f1f",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "description": "Secure login and payments for https://carbonwallet.com",
+  
   "icons": [
     {
       "src": "/img/drawable-xhdpi-icon.png",
@@ -17,8 +23,5 @@
       "sizes": "192x192",
       "type": "image/png"
     }
-  ],
-  "start_url": ".",
-  "display": "standalone",
-  "orientation": "portrait"
+  ]
 }
