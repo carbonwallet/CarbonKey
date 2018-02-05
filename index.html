@@ -140,11 +140,17 @@
 
                 $('#isIOS').text(isIOS());
                 
-                if (navigator.storage && navigator.storage.persist) 
-                    navigator.storage.persisted().then(persistent=>{
+                if (navigator.storage && navigator.storage.persist) { 
+                    
+                    navigator.storage.persisted().then(persistent => {
                         if (persistent)
                              $('#isAndroidPersistant').text("Active");
                     });
+                }
+                    
+                if (window.matchMedia('(display-mode: standalone)').matches) {
+                    $('#isAdded').text("Yes");
+                }
 
                 return false;
             });
@@ -937,6 +943,8 @@
                     <p id="isIOS" class="system-info"></p>
                     <p>Android Persistance ?</p>
                     <p id="isAndroidPersistant" class="system-info">Inactive</p>
+                    <p>Added to home screen ?</p>
+                    <p id="isAdded" class="system-info">No</p>
                 </div>
             </div>
 
