@@ -149,6 +149,21 @@ svg.down-arrow {
 	padding-top: 20px;
 }
 
+#restore .screen-container-btm p.important {
+	position:relative;
+	padding-left:30px;
+	color:#fff;
+	font-size:17px;
+	text-align:left;
+}
+
+.exclaim {
+	background-color: red;
+	border-radius: 20%;
+	padding-left: 10px;
+	padding-right: 10px;
+}
+
 /*****************************************************************************
 * Backup Page
 *****************************************************************************/
@@ -186,7 +201,7 @@ svg.down-arrow {
 }
 
 /*****************************************************************************
-* Backup Page
+* About Page
 *****************************************************************************/
 
 #about-page {
