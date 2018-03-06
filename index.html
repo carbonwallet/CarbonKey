@@ -156,7 +156,8 @@
                 try {
                     
                 if(window.isCordovaApp) {
-                    cordova.plugins.barcodeScanner.scan(
+                    var scanner = cordova.require("com.phonegap.plugins.barcodescanner.barcodescanner");
+                    scanner.scan(
                         function (result) {
                             processQRCode(result.text);
                         },
