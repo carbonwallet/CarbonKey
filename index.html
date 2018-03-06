@@ -152,9 +152,6 @@
                 return false;
             });
             $('#scan-button').click(function() {
-                $('.page').hide();
-                $('#scanner').show();
-                $('#brand').text('Scanner');
 
                 if(cordova) {
                     cordova.plugins.barcodeScanner.scan(
@@ -179,6 +176,9 @@
                         }
                     );
                 } else {
+                    $('.page').hide();
+                    $('#scanner').show();
+                    $('#brand').text('Scanner');
                     startScanner();
                 }
 
