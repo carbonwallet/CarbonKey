@@ -17,5 +17,5 @@
   </author>
 
   <!-- We'll include the Barcode plugin as an example -->
-  <plugin name="phonegap-plugin-barcodescanner"/>
+  <plugin name="phonegap-plugin-media-stream" />
 </widget>
