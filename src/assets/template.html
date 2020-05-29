@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Hello, World!</title>
+</head>
+<body data-controller="navigation" >
+
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top">
+        <a class="navbar-brand" href="#" id="brand">Carbon Key</a>
+        <button id="navButton" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#carbonNav" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="carbonNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a data-action="click->navigation#home" class="nav-link" href="#">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a data-action="click->navigation#backup" class="nav-link" href="#backup">Backup</a>
+                </li>
+                <li class="nav-item">
+                    <a data-action="click->navigation#restore" class="nav-link" href="#restore">Restore</a>
+                </li>
+                <li class="nav-item">
+                    <a data-action="click->navigation#about" class="nav-link" href="#about">About</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main role="main" class="container-fluid">
+
+        <!--
+        *
+        * Hoem page.
+        *
+        -->
+        <h1>Hello, World!</h1>
+
+        <div class="page mt-5 text-center" data-target="navigation.home">
+            <div class="top">
+                <h2>Scan the QR code on <span>CarbonWallet.com</span></h2>
+                <p><img src="img/qr-phone.png"></img>
+                </p>
+            </div>
+            <div class="bottom"></div>
+            <button data-action="click->navigation#scanner"  class="btn btn-bottom">Scan QR Code</button>
+        </div>
+
+        <!--
+        *
+        * Backup page
+        *
+        -->
+
+        <div class="page mt-5" data-target="navigation.backup" style="display: none">
+
+            <div class="screen-container-top text-center">
+                <!-- Backup icon. We embed svg to save on the number of external file dependencies. -->
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 1000 1000" enable-background="new 0 0 1000 1000" xml:space="preserve">
+                    <g>
+                        <path d="M570,80c116.7,0,215.8,40.8,297.5,122.5C949.2,284.2,990,383.3,990,500s-40.8,215.8-122.5,297.5C785.8,879.2,686.7,920,570,920c-96.3,0-181.6-29.2-255.9-87.5l65.6-65.6C438,806.3,501.4,826,570,826c90.4,0,167.3-31.7,230.8-95.2s95.2-140.4,95.2-230.8c0-90.4-31.7-167.3-95.2-230.8c-63.4-63.4-140.4-95.2-230.8-95.2c-90.4,0-167.3,31.7-230.8,95.2C275.8,332.7,244,409.6,244,500h140L195.9,686L10,500h140c0-116.7,40.8-215.8,122.5-297.5C354.2,120.9,453.4,80,570,80L570,80z M664.1,500c0,24.8-9.5,46.7-28.4,65.6C616.7,584.6,594.8,594,570,594c-24.8,0-46.7-9.5-65.6-28.4C485.5,546.7,476,524.8,476,500c0-24.8,9.5-46.7,28.4-65.6c18.9-18.9,40.8-28.4,65.6-28.4c24.8,0,46.7,9.5,65.6,28.4C654.6,453.3,664.1,475.2,664.1,500z" />
+                    </g>
+                </svg>
+                <h2>To backup your key write down the passphrase below.</h2>
+            </div>
+
+            <div class="screen-container-btm text-center">
+
+                <svg class="down-arrow" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 255 255" xml:space="preserve">
+                    <g>
+                        <g id="arrow-drop-down">
+                            <polygon points="0,0 127.5,191.25 255,0 		" />
+                        </g>
+                </svg>
+
+                <h3 id="backup-seed" class="text-center"></h3>
+                <p class="important"><span class="exclaim">Important</span> : If you don't backup your keys you will lose access to any services that use the key.</p>
+            </div>
+
+        </div>
+
+        <!--
+        *
+        * Restore from 12 word key page.
+        *
+        -->
+
+        <div class="page mt-5" data-target="navigation.restore" style="display: none">
+            <div class="screen-container-top text-center">
+
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+                    <path style="text-indent:0;text-align:start;line-height:normal;text-transform:none;block-progression:tb;-inkscape-font-specification:Bitstream Vera Sans" d="M 20 3 C 15.054545 3 11 7.0545455 11 12 C 11 12.519086 11.08466 12.978272 11.15625 13.4375 L 3.28125 21.28125 L 3 21.59375 L 3 22 L 3 28 L 3 29 L 4 29 L 9 29 L 10 29 L 10 28 L 10 26 L 12 26 L 13 26 L 13 25 L 13 23 L 15 23 L 16 23 L 16 22 L 16 20.03125 C 17.181148 20.608598 18.555233 21 20 21 C 24.945455 21 29 16.945455 29 12 C 29 7.0545455 24.945455 3 20 3 z M 20 5 C 23.854545 5 27 8.1454545 27 12 C 27 15.854545 23.854545 19 20 19 C 18.790476 19 17.544638 18.643666 16.59375 18.125 L 16.34375 18 L 16.09375 18 L 15 18 L 14 18 L 14 19 L 14 21 L 12 21 L 11 21 L 11 22 L 11 24 L 9 24 L 8 24 L 8 25 L 8 27 L 5 27 L 5 22.4375 L 12.90625 14.5 L 13.28125 14.15625 L 13.1875 13.625 C 13.0875 13.025 13 12.488889 13 12 C 13 8.1454545 16.145455 5 20 5 z M 22 8 C 20.895431 8 20 8.8954305 20 10 C 20 11.104569 20.895431 12 22 12 C 23.104569 12 24 11.104569 24 10 C 24 8.8954305 23.104569 8 22 8 z" overflow="visible" font-family="Bitstream Vera Sans" />
+                </svg>
+
+                <h2>Enter your twelve word backup phrase.</h2>
+            </div>
+
+            <div class="screen-container-btm text-center">
+                <svg class="down-arrow" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 255 255" xml:space="preserve">
+                    <g>
+                        <g id="arrow-drop-down">
+                            <polygon points="0,0 127.5,191.25 255,0 		" />
+                        </g>
+                </svg>
+                <textarea class="form-control" id="restore-words"></textarea>
+                <button id="restore-button" class="btn btn-normal mt-5">Restore Key</button>
+                
+                <p class="important mt-5"><span class="exclaim">Important</span> : 
+                We recommend you uninstall CarbonKey from your home screen
+                before restoring your backup passphrase.</p>
+            </div>
+           
+        </div>
+
+        <!--
+        *
+        * The scanner
+        *
+        -->
+
+        <div class="page mt-5"  data-target="navigation.scanner" style="display: none">
+            <br />
+            <br />
+            <p id="scans">Waiting to scan...</p>
+            <video id="camera-stream" autoplay playsinline></video>
+
+            <div id="snapshotLimitOverlay">
+                <div id="about">
+                    <p>Attempting to initialise camera
+                        <br />
+                    </p>
+                </div>
+            </div>
+            <canvas id="qr-canvas" width=800 height=600></canvas>
+        </div>
+
+        <!--
+        *
+        * About page. A few stats i.e. BITID address. Useful for support.
+        *
+        -->
+
+        <div class="page mt-5"  data-target="navigation.about" style="display: none">
+            <div class="screen-container-top text-center">
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 1000 1000" enable-background="new 0 0 1000 1000" xml:space="preserve">
+                    <g>
+                        <g transform="translate(0.000000,511.000000) scale(0.100000,-0.100000)">
+                            <path d="M234,4052.3c-143.4-112.3-133.9,98-133.9-3324.7c0-2939.9,2.4-3143.1,43-3222c86-176.9-33.5-167.3,2246.8-167.3h2036.4v-215.1v-212.7l-941.7-7.2c-1130.6-9.6-1032.6,21.5-1166.4-356.1c-93.2-265.3-107.6-353.8-62.1-399.2c40.6-40.6,5447.2-40.6,5487.8,0c45.4,45.4,31.1,133.8-62.1,399.2c-133.9,377.6-35.9,346.6-1166.4,356.1l-941.7,7.2v212.7v215.1h2038.8c2277.8,0,2158.3-9.6,2244.4,167.3c40.6,78.9,43,282,43,3222c0,3422.7,9.6,3212.4-133.8,3324.7l-64.5,50.2H5000H298.5L234,4052.3z M9297.5,966.6l-7.2-2540.8H5000H709.6l-7.2,2540.8l-4.8,2538.4H5000h4302.3L9297.5,966.6z M5368.1-1982.9c40.6-38.3,50.2-145.8,19.1-193.6c-33.5-55-153-78.9-387.2-78.9c-325.1,0-406.3,33.5-406.3,172.1c0,124.3,43,138.6,406.3,138.6C5270.1-1944.7,5339.4-1951.8,5368.1-1982.9z" />
+                            <path d="M1971.6,3074.7c-105.2-43-124.3-164.9-40.6-251c55-52.6,1350.4-52.6,1405.4,0c86,88.4,64.5,210.3-47.8,251C3212.1,3103.4,2043.3,3103.4,1971.6,3074.7z" />
+                            <path d="M4593.7,3067.5c-76.5-38.2-95.6-167.3-33.5-234.2c40.6-43,100.4-45.4,1814.2-45.4c1732.9,0,1773.5,0,1816.5,47.8c52.6,57.4,55,160.1,2.4,210.3c-35.8,38.2-196,40.6-1790.2,45.4C5028.7,3096.2,4641.5,3091.4,4593.7,3067.5z" />
+                            <path d="M1880.8,1724.3l-59.8-57.4v-870v-870l55-50.2c55-52.6,64.5-52.6,970.4-52.6h913.1l57.4,59.8l59.8,57.4v838.9c0,903.5-7.2,956.1-124.3,989.5c-31.1,7.2-451.7,14.3-934.6,14.3h-879.6L1880.8,1724.3z" />
+                            <path d="M4574.6,1721.9c-35.9-23.9-52.6-59.8-52.6-117.1c0-162.5-90.8-155.4,1854.8-155.4c1651.6,0,1752,2.4,1802.2,43c33.5,26.3,55,69.3,55,112.3s-21.5,86-55,112.3c-50.2,40.6-150.6,43-1802.2,43C4832.7,1760.1,4622.4,1755.3,4574.6,1721.9z" />
+                            <path d="M4562.6,1143.5c-50.2-55-52.6-179.3-4.8-219.9c55-45.4,3587.7-43,3633.1,2.4c55,57.4,55,167.3-2.4,222.3c-33.5,33.5-229.5,38.2-1811.8,38.2C4686.9,1186.5,4598.5,1184.1,4562.6,1143.5z" />
+                            <path d="M4565,586.5c-28.7-14.3-43-52.6-43-105.2c0-164.9-117.1-155.4,1847.6-155.4c975.2,0,1785.5,9.6,1799.8,19.1c62.2,40.6,83.7,121.9,52.6,191.2l-31.1,64.5l-1792.6,4.8C5210.3,610.4,4591.3,603.3,4565,586.5z" />
+                            <path d="M4677.3-175.9c-198.4-81.3-246.2-363.3-83.7-506.7l71.7-66.9H5392h726.6l74.1,62.1c40.6,33.5,86.1,100.4,100.4,150.6c23.9,76.5,19.1,107.6-21.5,198.4c-78.9,181.7-107.6,186.4-882,184.1C5023.9-154.4,4703.6-164,4677.3-175.9z" />
+                        </g>
+                    </g>
+                </svg>
+            </div>
+            <div class="screen-container-btm text-center">
+                <svg class="down-arrow text-center" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 255 255" xml:space="preserve">
+                    <g>
+                        <g id="arrow-drop-down">
+                            <polygon points="0,0 127.5,191.25 255,0 		" />
+                        </g>
+                </svg>
+                <div class="text-left">
+                    <p>CarbonWallet BITID Address</p>
+                    <p id="bitid-address" class="text-truncate system-info"></p>
+                    <p>XPUB Last 6 Digits.</p>
+                    <p id="xpub-address" class="text-truncate system-info"></p>
+                    <p>iOS Device ?</p>
+                    <p id="isIOS" class="system-info"></p>
+                    <p>Android Persistance ?</p>
+                    <p id="isAndroidPersistant" class="system-info">Inactive</p>
+                    <p>Added to home screen ?</p>
+                    <p id="isAdded" class="system-info">No</p>
+                </div>
+            </div>
+
+            <input id="fileChooser" type="file" accept="image/*" class="btn btn-bottom" style="bottom: 80px">
+        </div>
+
+    </main>
+    <!-- /.container -->
+
+    <!-- BITID Confirmation Modal -->
+
+    <div class="modal fade" id="bitidModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Authenticate</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Authenticate with
+                    <span id="bitid-requester">https://carbonwallet.com</span> ?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="bitidConfirm" type="button" data-dismiss="modal" class="btn btn-primary">Authenticate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tethering Confirmation Modal -->
+
+    <div class="modal fade" id="tetheringModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tethering</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Tether Carbon Key with
+                    <span id="tethering-text">Carbon Wallet</span> ?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="tetheringConfirm" type="button" data-dismiss="modal" class="btn btn-primary">Authenticate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signing Confirmation Modal -->
+
+    <div class="modal fade" id="signingModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sign Transaction</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Sign this transaction ?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="signingConfirm" type="button" data-dismiss="modal" class="btn btn-primary">Authenticate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signing Confirmation Modal -->
+
+    <div class="modal fade" id="seedModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Invalid Backup Seed</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    This is not a valid backup seed.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

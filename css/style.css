@@ -111,7 +111,7 @@ svg.down-arrow {
 
 #home .top {
 	height:60%;
-	background:url(../img/qr-bg.jpg) no-repeat;
+	background:url(../src/assets/qr-bg.jpg) no-repeat;
 	background-position:center;
 	-webkit-background-size:cover;
 	-moz-background-size:cover;
