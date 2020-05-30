@@ -1,17 +1,31 @@
 import { Controller } from "stimulus"
+import * as bip39 from "bip39"
+import * as snackbar from 'node-snackbar'
 
 export default class extends Controller {
 
-  static targets = ['about', 'home', 'backup', 'restore', 'scanner']
+  static targets = ['about', 'home', 'backup', 'restore', 'scanner', 'menu']
 
   readonly aboutTarget!: HTMLDivElement
   readonly homeTarget!: HTMLDivElement
   readonly backupTarget!: HTMLDivElement
   readonly restoreTarget!: HTMLDivElement
   readonly scannerTarget!: HTMLDivElement
+  readonly menuTarget!: HTMLDivElement
 
   connect() {
-    console.log("Connected")
+    if(window.localStorage.getItem("seed_words") != null) {
+
+    } else {
+      const mnemonic = bip39.generateMnemonic()
+      console.log(mnemonic)
+      window.localStorage.setItem('seed_words', mnemonic)
+      snackbar.show({text: 'New Key created.', pos: 'bottom-center' })
+    }
+  }
+
+  toggle() {
+    this.menuTarget.classList.toggle('collapse')
   }
 
   resetUI() {
@@ -20,6 +34,10 @@ export default class extends Controller {
     this.backupTarget.style.display = 'none'
     this.restoreTarget.style.display = 'none'
     this.scannerTarget.style.display = 'none'
+
+    if(this.backupTarget.getAttribute('data-controller') != null) {
+      this.backupTarget.removeAttribute('data-controller')
+    }
   }
 
   home() {
@@ -34,6 +52,7 @@ export default class extends Controller {
 
   backup() {
     this.resetUI()
+    this.backupTarget.setAttribute('data-controller', 'backup')
     this.backupTarget.style.display = 'block'
   }
 
