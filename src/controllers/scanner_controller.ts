@@ -29,12 +29,45 @@ export default class extends Controller {
   localMediaStream = null
   context = null
   canvas = null
+  qrcodeWorker = null
+
+  initialize() {
+
+    // Register the service worker that caches our files.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('service-worker.js')
+        .then(() => {
+          console.log('Service worker registered');
+        })
+        .catch(err => {
+          console.log('Service worker registration failed: ' + err);
+        });
+    }
+
+    // A web worker for running the main QR code parsing on
+    // a background thread.
+    this.qrcodeWorker = new Worker("qrcode-web-worker.js");
+    this.qrcodeWorker.addEventListener('message', this.showResult);
+  }
 
   connect() {
-    console.log("Connected")
+    console.log("Scanner Connected")
+    this.startScanner()
+  }
+
+  disconnect() {
+    console.log('Switching off camera.');
+    if (this.player) {
+      this.player.pause();
+      this.player.src = "";
+      this.localMediaStream.getTracks()[0].stop();
+    }
   }
 
   startScanner() {
+
+    const controller = this
 
     try {
 
@@ -42,29 +75,29 @@ export default class extends Controller {
         // Request the camera.
         navigator.mediaDevices.enumerateDevices()
           .then(function (devices) {
-            var device = devices.filter(function (device) {
+            const device = devices.filter(function (device) {
               if (device.kind == "videoinput") {
                 return device;
               }
             });
 
+            var constraints
             if (device.length > 1) {
-              var deviceIndex = 1;
 
-              // On iOS grab 1st camera its the rear.
-              if (this.isIOS())
-                deviceIndex = 0;
-
-              var constraints = {
+              constraints = {
                 video: {
                   mandatory: {
-                    sourceId: device[deviceIndex].deviceId ?
-                      device[deviceIndex].deviceId : null
+                    sourceId: device[device.length - 1].deviceId ? device[device.length - 1].deviceId : null
                   }
                 },
                 audio: false
               };
-              this.startCapture(constraints);
+
+              if (controller.isIOS()) {
+                constraints.video.facingMode = 'environment';
+              }
+              controller.startCapture(constraints);
+
             } else if (device.length) {
               constraints = {
                 video: {
@@ -74,13 +107,25 @@ export default class extends Controller {
                 },
                 audio: false
               };
-              this.startCapture(constraints);
+
+              if (controller.isIOS()) {
+                constraints.video.facingMode = 'environment';
+              }
+
+              if (!constraints.video.mandatory.sourceId && !controller.isIOS()) {
+                controller.startCapture({ video: true });
+              } else {
+                controller.startCapture(constraints);
+              }
+
+            } else {
+              controller.startCapture({ video: true });
             }
           })
           .catch(function (error) {
             alert("Error occurred : " + error);
           });
-        this.scannerIsRunning = true;
+        controller.scannerIsRunning = true;
 
       } else {
         alert('Sorry, your browser does not support getUserMedia');
@@ -92,6 +137,8 @@ export default class extends Controller {
 
   startCapture(constraints) {
 
+    const controller = this
+
     var success = function (localMediaStream) {
       document.getElementById('about').style.display = 'none';
       // Get a reference to the video element on the page.
@@ -99,20 +146,20 @@ export default class extends Controller {
 
       // Create an object URL for the video stream and use this 
       // to set the video source.
-      if( vid instanceof HTMLVideoElement) {
+      if (vid instanceof HTMLVideoElement) {
         vid.srcObject = localMediaStream;
-  
-        this.player = vid;
-        this.localMediaStream = localMediaStream;
-        this.canvas = document.getElementById('qr-canvas');
-        this.context = this.canvas.getContext('2d');
-        this.scanCode(true);
+
+        controller.player = vid;
+        controller.localMediaStream = localMediaStream;
+        controller.canvas = document.getElementById('qr-canvas');
+        controller.context = controller.canvas.getContext('2d');
+        controller.scanCode(true);
       }
     }
 
     var failure = function (err) {
       // Log the error to the console.
-      snackbar.show({text: 'Error getUserMedia: ' + err, pos: 'bottom-center' })
+      snackbar.show({ text: 'Error getUserMedia: ' + err, pos: 'bottom-center' })
     };
 
     // For iOS we have another of assuring we get the rear camera.
@@ -150,20 +197,22 @@ export default class extends Controller {
 
   scanCode(wasSuccess) {
 
+    const controller = this
+
     setTimeout(function () {
 
       try {
 
-        var width = this.player.videoWidth;
-        var height = this.player.videoHeight;
+        var width = controller.player.videoWidth;
+        var height = controller.player.videoHeight;
 
         this.canvas.width = width;
         this.canvas.height = height;
 
         // capture current snapshot
-        this.context.drawImage(this.player, 0, 0, width, height);
+        this.context.drawImage(controller.player, 0, 0, width, height);
 
-        var imageData = this.context.getImageData(0, 0, width, height);
+        var imageData = controller.context.getImageData(0, 0, width, height);
 
         // scan for QRCode
         const message = {
@@ -173,7 +222,7 @@ export default class extends Controller {
           imageData: imageData
         };
 
-        this.qrcodeWorker.postMessage(message);
+        controller.qrcodeWorker.postMessage(message);
       } catch (e) {
         console.log(e);
       }
@@ -181,24 +230,15 @@ export default class extends Controller {
     }, wasSuccess ? 2000 : 500);
   }
 
-  stopScanner() {
-    console.log('Switching off camera.');
-    if (this.player) {
-      this.player.pause();
-      this.player.src = "";
-      this.localMediaStream.getTracks()[0].stop();
-    }
-  }
-
   // Decide what type of QR code this is i.e. BITID or transaction
   // signing and process.
-  processQRCode(data : string) {
+  processQRCode(data: string) {
 
     const seeds = window.localStorage.getItem('seed_words')
-    if(seeds != null) {
+    if (seeds != null) {
       const seedBuffer = bip39.mnemonicToSeedSync(seeds)
       const ecpair = bitcoin.ECPair.fromPrivateKey(seedBuffer)
-  
+
       if (/^(bitid:).*$/.test(data) === true) {
         this.processBITID(data, ecpair);
       } else if (data.split("|").length > 3 === true) {
@@ -211,12 +251,12 @@ export default class extends Controller {
           this.signTransaction(ecpair, parsed);
         }
       } else {
-        snackbar.show({text: data, pos: 'bottom-center' })
+        snackbar.show({ text: data, pos: 'bottom-center' })
       }
     }
   }
 
-  processBITID(bitid_qr_code, ecpair : bitcoin.ECPairInterface) {
+  processBITID(bitid_qr_code, ecpair: bitcoin.ECPairInterface) {
 
     console.log(bitid_qr_code);
 
@@ -291,7 +331,7 @@ export default class extends Controller {
     return parsed.protocol + ":" + parsed.host + parsed.pathname;
   }
 
-  getSiteAddress(bitid : string) {
+  getSiteAddress(bitid: string) {
     const parsed = this.parseURI(bitid);
     const protocol = (parsed.unsecure != '') ? 'http://' : 'https://';
     return protocol + parsed.host;
@@ -301,7 +341,7 @@ export default class extends Controller {
     return this.getSiteAddress(bitid) + this.parseURI(bitid).pathname;
   }
 
-  generateBITIDAddress(ecpair : bitcoin.ECPairInterface, site_uri) {
+  generateBITIDAddress(ecpair: bitcoin.ECPairInterface, site_uri) {
 
     var xpriv = bip32.fromSeed(ecpair.privateKey)
 
@@ -313,7 +353,7 @@ export default class extends Controller {
     return derived;
   }
 
-  generateSignatureMessage(ecpair : bitcoin.ECPairInterface, address) {
+  generateSignatureMessage(ecpair: bitcoin.ECPairInterface, address) {
 
     const parsed = this.parseURI(address);
 
@@ -324,12 +364,10 @@ export default class extends Controller {
     const message = parsed.href;
 
     // Sign the message
-    var keyPair = bitcoin.ECPair.fromWIF('5KYZdUEo39z3FPrtuX2QbbwGnNP5zTd7yyr2SC1j299sBCnWjss')
-    var privateKey = keyPair.privateKey
     const messagePrefix = bitcoin.networks.bitcoin.messagePrefix;
 
     const signature = message.sign(message, messagePrefix,
-      privateKey, keyPair.compressed);
+      ecpair, ecpair.compressed);
 
     const signed = signature.toString('base64');
 
@@ -341,7 +379,7 @@ export default class extends Controller {
   // Tethering - Send a wallet one of our public keys. xpub format.
   // =======================================================================
 
-  tether(ecpair : bitcoin.ECPairInterface, parsed) {
+  tether(ecpair: bitcoin.ECPairInterface, parsed) {
     console.log('Tether ' + JSON.stringify(parsed));
 
     const xpubB58 = this.getHDWalletDeterministicKey(ecpair).neutered().toBase58();
@@ -375,7 +413,7 @@ export default class extends Controller {
     });**/
   }
 
-  parseCommand(href : string) : Command | null {
+  parseCommand(href: string): Command | null {
     const params = href.split("|");
     if (params.length >= 3) {
       var result = {
@@ -394,14 +432,14 @@ export default class extends Controller {
     return null;
   }
 
-  getHDWalletDeterministicKey(ecpair : bitcoin.ECPairInterface) : bip32.BIP32Interface {
+  getHDWalletDeterministicKey(ecpair: bitcoin.ECPairInterface): bip32.BIP32Interface {
     var xpriv = bip32.fromSeed(ecpair.privateKey)
 
     const derivedByArgument = xpriv.derivePath("m/0");
     return derivedByArgument;
   }
 
-  buildRequestMPKObject(mpk, site_uri, parsed, ecpair : bitcoin.ECPairInterface) {
+  buildRequestMPKObject(mpk, site_uri, parsed, ecpair: bitcoin.ECPairInterface) {
     // Clone the parsed results.
     var result = JSON.parse(JSON.stringify(parsed));
     // remove the suff we don't want to send back
@@ -434,7 +472,7 @@ export default class extends Controller {
   // 3. Send the signatures back.
   // =======================================================================
 
-  signTransaction(ecpair : bitcoin.ECPairInterface, parsed) {
+  signTransaction(ecpair: bitcoin.ECPairInterface, parsed) {
 
     const call_back = parsed.post_back + '?' + this.arrayToQueryParams(parsed);
 
@@ -461,16 +499,16 @@ export default class extends Controller {
           return response.text().then(function (text) {
 
             console.log('Response from server ' + text);
-            snackbar.show({text: 'Success ' + text, pos: 'bottom-center' })
+            snackbar.show({ text: 'Success ' + text, pos: 'bottom-center' })
           });
         }).catch(function (error) {
-          snackbar.show({text: 'Error ' + error, pos: 'bottom-center' })
+          snackbar.show({ text: 'Error ' + error, pos: 'bottom-center' })
         });
 
       });
 
     }).catch(function (error) {
-      snackbar.show({text: 'Error ' + error, pos: 'bottom-center' })
+      snackbar.show({ text: 'Error ' + error, pos: 'bottom-center' })
     });
   }
 
@@ -486,7 +524,7 @@ export default class extends Controller {
     return result;
   }
 
-  signSigList(ecpair : bitcoin.ECPairInterface, transactionAndSigListText) {
+  signSigList(ecpair: bitcoin.ECPairInterface, transactionAndSigListText) {
 
     if (transactionAndSigListText.indexOf(':') == -1)
       throw ('Error, invalid Transaction');
@@ -498,7 +536,7 @@ export default class extends Controller {
     return JSON.stringify(this.signSignatureList(ecpair, sigList));
   }
 
-  signSignatureList(key : bitcoin.ECPairInterface, sig_list) {
+  signSignatureList(key: bitcoin.ECPairInterface, sig_list) {
 
     const address = bitcoin.payments.p2pkh({ pubkey: key.publicKey }).address!
     var full_address = key.publicKey.toString('hex');
@@ -513,7 +551,7 @@ export default class extends Controller {
         const hash_buff = Buffer.from(hash, 'hex');
 
         const signed_hash = key.sign(hash_buff)
-        const sigDer = bitcoin.script.signature.encode(signed_hash, 1) 
+        const sigDer = bitcoin.script.signature.encode(signed_hash, 1)
         const sigWithoutHash = sigDer.slice(0, sigDer.length - 1);
 
         sig_list[x][address]['sig'] = sigWithoutHash;
@@ -524,7 +562,7 @@ export default class extends Controller {
         const hash_buff = Buffer.from(hash, 'hex');
 
         const signed_hash = key.sign(hash_buff)
-        const sigDer = bitcoin.script.signature.encode(signed_hash, 1) 
+        const sigDer = bitcoin.script.signature.encode(signed_hash, 1)
         const sigWithoutHash = sigDer.slice(0, sigDer.length - 1);
 
         sig_list[x][full_address]['sig'] = sigWithoutHash;

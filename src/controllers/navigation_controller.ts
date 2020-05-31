@@ -38,6 +38,10 @@ export default class extends Controller {
     if(this.backupTarget.getAttribute('data-controller') != null) {
       this.backupTarget.removeAttribute('data-controller')
     }
+
+    if(this.scannerTarget.getAttribute('data-controller') != null) {
+      this.scannerTarget.removeAttribute('data-controller')
+    }
   }
 
   home() {
@@ -63,6 +67,7 @@ export default class extends Controller {
 
   scanner() {
     this.resetUI()
+    this.scannerTarget.setAttribute('data-controller', 'scanner')
     this.scannerTarget.style.display = 'block'
   }
 }
