@@ -244,7 +244,8 @@ export default class extends Controller {
     const seeds = window.localStorage.getItem('seed_words')
     if (seeds != null) {
       const seedBuffer = bip39.mnemonicToSeedSync(seeds)
-      const ecpair = bitcoin.ECPair.fromPrivateKey(seedBuffer)
+      const hd = bip32.fromSeed(seedBuffer)
+      const ecpair = bitcoin.ECPair.fromPrivateKey(hd.privateKey)
 
       if (/^(bitid:).*$/.test(data) === true) {
         this.processBITID(data, ecpair);

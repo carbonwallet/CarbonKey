@@ -35,6 +35,10 @@ export default class extends Controller {
     this.restoreTarget.style.display = 'none'
     this.scannerTarget.style.display = 'none'
 
+    if(!this.menuTarget.classList.contains('collapse')) {
+      this.menuTarget.classList.toggle('collapse')
+    }
+
     if(this.backupTarget.getAttribute('data-controller') != null) {
       this.backupTarget.removeAttribute('data-controller')
     }
