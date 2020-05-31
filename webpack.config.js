@@ -43,6 +43,7 @@ module.exports = {
           { from: './src/assets/*' },
           { from: './src/qrcode-web-worker.js' },
           { from: './src/service-worker.js' },
+          { from: './src/manifest.json' },
         ]),
         new CleanWebpackPlugin(['dist']),
         new HtmlWebpackPlugin({

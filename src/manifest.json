@@ -9,17 +9,17 @@
   
   "icons": [
     {
-      "src": "/img/drawable-xhdpi-icon.png",
+      "src": "/src/assets/drawable-xhdpi-icon.png",
       "sizes": "96x96",
       "type": "image/png"
     },
     {
-      "src": "/img/drawable-xxhdpi-icon.png",
+      "src": "/src/assets/drawable-xxhdpi-icon.png",
       "sizes": "144x144",
       "type": "image/png"
     },
     {
-      "src": "/img/drawable-xxxhdpi-icon.png",
+      "src": "/src/assets/drawable-xxxhdpi-icon.png",
       "sizes": "192x192",
       "type": "image/png"
     }

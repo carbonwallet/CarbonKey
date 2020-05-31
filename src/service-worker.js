@@ -4,12 +4,7 @@ const urlsToCache = [
   'css/bootstrap.min.css',
   'css/style.css',
   'qrcode-web-worker.js',
-  'img/qr-phone.png',
-  'img/drawable-xhdpi-icon.png',
-  'img/drawable-xxhdpi-icon.png',
-  'img/drawable-xxxhdpi-icon.png',
-  'img/qr-bg.jpg',
-];
+]
 
 // Listen for the install event, which fires when the service worker is installing
 self.addEventListener('install', event => {
@@ -17,7 +12,7 @@ self.addEventListener('install', event => {
   // This is so we don't move on to other events until the critical initial cache is done
   event.waitUntil(
     // Open a named cache, then add all the specified URLs to it
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+    //caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
 });
 
