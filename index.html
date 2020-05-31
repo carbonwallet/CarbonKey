@@ -29,11 +29,11 @@
         
         // Globals for the scanner. Should look at reducing this.
         const QRScanner = {};
-        QRScanner.scannerIsRunning = false;
-        QRScanner.player = null;
-        QRScanner.localMediaStream = null;
-        QRScanner.context = null;
-        QRScanner.canvas = null;
+        scannerIsRunning = false;
+        player = null;
+        localMediaStream = null;
+        context = null;
+        canvas = null;
 
         // =======================================================================
         // Use JQuery to create a lightweight UI.
@@ -204,7 +204,7 @@
         function populateCarbonKeyGlobals(seedWords) {
             CarbonKeyWallet.words = seedWords;
             const seed = Bitcoin.Bip39.mnemonicToSeedHex(CarbonKeyWallet.words);
-            const hd = Bitcoin.BitcoinJS.HDNode.fromSeedHex(seed);
+            const hd = bitcoin.HDNode.fromSeedHex(seed);
             CarbonKeyWallet.wif = hd.keyPair.toWIF();
         }
 
@@ -250,9 +250,9 @@
         function resetUI() {
             $('.page').hide();
 
-            if (QRScanner.scannerIsRunning) {
+            if (scannerIsRunning) {
                 stopScanner();
-                QRScanner.scannerIsRunning = false;
+                scannerIsRunning = false;
             }
         }
 
@@ -324,7 +324,7 @@
                         .catch(function(error) {
                             alert("Error occurred : ", error);
                         });
-                    QRScanner.scannerIsRunning = true;
+                    scannerIsRunning = true;
 
                 } else {
                     alert('Sorry, your browser does not support getUserMedia');
@@ -345,10 +345,10 @@
                 // to set the video source.
                 vid.srcObject = localMediaStream;
 
-                QRScanner.player = vid;
-                QRScanner.localMediaStream = localMediaStream;
-                QRScanner.canvas = document.getElementById('qr-canvas');
-                QRScanner.context = QRScanner.canvas.getContext('2d');
+                player = vid;
+                localMediaStream = localMediaStream;
+                canvas = document.getElementById('qr-canvas');
+                context = canvas.getContext('2d');
                 scanCode(true);
             }
 
@@ -391,16 +391,16 @@
 
                 try {
 
-                    var width = QRScanner.player.videoWidth;
-                    var height = QRScanner.player.videoHeight;
+                    var width = player.videoWidth;
+                    var height = player.videoHeight;
 
-                    QRScanner.canvas.width = width;
-                    QRScanner.canvas.height = height;
+                    canvas.width = width;
+                    canvas.height = height;
 
                     // capture current snapshot
-                    QRScanner.context.drawImage(QRScanner.player, 0, 0, width, height);
+                    context.drawImage(player, 0, 0, width, height);
 
-                    var imageData = QRScanner.context.getImageData(0, 0, width, height);
+                    var imageData = context.getImageData(0, 0, width, height);
 
                     // scan for QRCode
                     const message = {
@@ -420,10 +420,10 @@
 
         function stopScanner() {
             console.log('Switching off camera.');
-            if(QRScanner.player) {
-                QRScanner.player.pause();
-                QRScanner.player.src = "";
-                QRScanner.localMediaStream.getTracks()[0].stop();
+            if(player) {
+                player.pause();
+                player.src = "";
+                localMediaStream.getTracks()[0].stop();
             }
         }
 
@@ -539,11 +539,11 @@
 
         function generateBITIDAddress(wif, site_uri) {
 
-            const keyPair = Bitcoin.BitcoinJS.ECPair.fromWIF(wif);
+            const keyPair = bitcoin.ECPair.fromWIF(wif);
             const phex = keyPair.d.toBuffer().toString('hex');
-            const hd = Bitcoin.BitcoinJS.HDNode.fromSeedHex(phex);
+            const hd = bitcoin.HDNode.fromSeedHex(phex);
 
-            const sha256URL = Bitcoin.BitcoinJS.crypto.sha256(site_uri);
+            const sha256URL = bitcoin.crypto.sha256(site_uri);
             const sha32uri = sha256URL.readInt32LE(1);
 
             const derived = hd.derivePath("m/0'/45342'/" + sha32uri + "/0");
@@ -563,7 +563,7 @@
 
             // Sign the message
             const privateKey = derived.keyPair.d.toBuffer(32);
-            const messagePrefix = Bitcoin.BitcoinJS.networks.bitcoin.messagePrefix;
+            const messagePrefix = bitcoin.networks.bitcoin.messagePrefix;
             const signedMessage = Bitcoin.Message.sign(message, messagePrefix,
                 privateKey, derived.keyPair.compressed);
             const signed = signedMessage.toString('base64');
@@ -630,9 +630,9 @@
 
         function getHDWalletDeterministicKey(wif) {
 
-            const keyPair = Bitcoin.BitcoinJS.ECPair.fromWIF(wif);
+            const keyPair = bitcoin.ECPair.fromWIF(wif);
             const phex = keyPair.d.toBuffer().toString('hex');
-            const hd = Bitcoin.BitcoinJS.HDNode.fromSeedHex(phex);
+            const hd = bitcoin.HDNode.fromSeedHex(phex);
 
             const derivedByArgument = hd.derivePath("m/0");
             return derivedByArgument;

@@ -74,9 +74,9 @@ export default class extends Controller {
         function resetUI() {
             $('.page').hide();
 
-            if (QRScanner.scannerIsRunning) {
+            if (scannerIsRunning) {
                 stopScanner();
-                QRScanner.scannerIsRunning = false;
+                scannerIsRunning = false;
             }
         }
 

@@ -34,7 +34,10 @@
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
+    "bip32": "^2.0.5",
     "bip39": "^3.0.2",
+    "bitcoinjs-lib": "^5.1.9",
+    "bitcoinjs-message": "^2.1.0",
     "node-snackbar": "^0.1.16",
     "stimulus": "^1.1.1"
   }
