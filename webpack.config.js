@@ -40,7 +40,9 @@ module.exports = {
         new MiniCssExtractPlugin({
         }),
         new CopyPlugin([
-          { from: './src/assets', to: './dist/images/[name].[ext]' },
+          { from: './src/assets/*' },
+          { from: './src/qrcode-web-worker.js' },
+          { from: './src/service-worker.js' },
         ]),
         new CleanWebpackPlugin(['dist']),
         new HtmlWebpackPlugin({

@@ -32,23 +32,30 @@ export default class extends Controller {
   qrcodeWorker = null
 
   initialize() {
-
-    // Register the service worker that caches our files.
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('service-worker.js')
-        .then(() => {
-          console.log('Service worker registered');
-        })
-        .catch(err => {
-          console.log('Service worker registration failed: ' + err);
-        });
-    }
-
     // A web worker for running the main QR code parsing on
     // a background thread.
     this.qrcodeWorker = new Worker("qrcode-web-worker.js");
-    this.qrcodeWorker.addEventListener('message', this.showResult);
+    const controller = this
+    this.qrcodeWorker.addEventListener('message', function (e) {
+
+      var resultData = e.data;
+
+      if (resultData.result !== false) {
+
+        if (navigator.vibrate)
+          navigator.vibrate(200);
+          controller.processQRCode(resultData.result);
+
+        //this.initHomePage();
+
+      } else {
+        // if not found, retry
+
+        document.getElementById('scans').innerHTML = resultData.error;
+
+        controller.scanCode(false);
+      }
+    });
   }
 
   connect() {
@@ -206,11 +213,11 @@ export default class extends Controller {
         var width = controller.player.videoWidth;
         var height = controller.player.videoHeight;
 
-        this.canvas.width = width;
-        this.canvas.height = height;
+        controller.canvas.width = width;
+        controller.canvas.height = height;
 
         // capture current snapshot
-        this.context.drawImage(controller.player, 0, 0, width, height);
+        controller.context.drawImage(controller.player, 0, 0, width, height);
 
         var imageData = controller.context.getImageData(0, 0, width, height);
 

@@ -13,3 +13,17 @@ application.register("navigation", NavigationController)
 application.register("backup", BackupController)
 application.register("restore", RestoreController)
 application.register("scanner", ScannerController)
+
+
+
+// Register the service worker that caches our files.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker
+    .register('service-worker.js')
+    .then(() => {
+      console.log('Service worker registered');
+    })
+    .catch(err => {
+      console.log('Service worker registration failed: ' + err);
+    });
+}
