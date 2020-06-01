@@ -6,6 +6,7 @@ import NavigationController from "./controllers/navigation_controller"
 import BackupController from "./controllers/backup_controller"
 import RestoreController from "./controllers/restore_controller"
 import ScannerController from "./controllers/scanner_controller"
+import AboutController from "./controllers/about_controller"
 
 const application = Application.start()
 
@@ -13,8 +14,7 @@ application.register("navigation", NavigationController)
 application.register("backup", BackupController)
 application.register("restore", RestoreController)
 application.register("scanner", ScannerController)
-
-
+application.register("about", AboutController)
 
 // Register the service worker that caches our files.
 if ('serviceWorker' in navigator) {
