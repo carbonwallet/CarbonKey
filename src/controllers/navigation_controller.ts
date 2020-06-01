@@ -50,6 +50,10 @@ export default class extends Controller {
     if(this.aboutTarget.getAttribute('data-controller') != null) {
       this.aboutTarget.removeAttribute('data-controller')
     }
+
+    if(this.restoreTarget.getAttribute('data-controller') != null) {
+      this.restoreTarget.removeAttribute('data-controller')
+    }
   }
 
   home() {
@@ -71,6 +75,7 @@ export default class extends Controller {
 
   restore() {
     this.resetUI()
+    this.scannerTarget.setAttribute('data-controller', 'restore')
     this.restoreTarget.style.display = 'block'
   }
 
