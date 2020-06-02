@@ -75,7 +75,7 @@ export default class extends Controller {
 
   restore() {
     this.resetUI()
-    this.scannerTarget.setAttribute('data-controller', 'restore')
+    this.restoreTarget.setAttribute('data-controller', 'restore')
     this.restoreTarget.style.display = 'block'
   }
 
