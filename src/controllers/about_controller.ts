@@ -28,6 +28,7 @@ export default class extends Controller {
 
   scanFromFile(e : Event) {
 
+    console.log('Scan from file')
     const controller = this
     /* global Image */
     var img = new Image();
@@ -52,6 +53,8 @@ export default class extends Controller {
         }
       }
     }
+    var _URL = window.URL || window.webkitURL;
+    img.src = _URL.createObjectURL((<HTMLInputElement>e.target).files[0]);
   }
 }
 
