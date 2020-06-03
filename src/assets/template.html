@@ -48,7 +48,7 @@
         * Home page.
         *
         -->
-        <div class="page mt-5 text-center" data-target="navigation.home">
+        <div id="home" class="page mt-5 text-center" data-target="navigation.home">
             <div class="top">
                 <h2>Scan the QR code on <span>CarbonWallet.com</span></h2>
                 <p><img src="/src/assets/qr-phone.png"></img>
@@ -64,7 +64,7 @@
         *
         -->
 
-        <div class="page mt-5" data-target="navigation.backup" style="display: none">
+        <div id="backup" class="page mt-5" data-target="navigation.backup" style="display: none">
 
             <div class="screen-container-top text-center">
                 <!-- Backup icon. We embed svg to save on the number of external file dependencies. -->
@@ -97,7 +97,7 @@
         *
         -->
 
-        <div class="page mt-5" data-target="navigation.restore" style="display: none">
+        <div id="restore" class="page mt-5" data-target="navigation.restore" style="display: none">
             <div class="screen-container-top text-center">
 
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
@@ -181,8 +181,6 @@
                     <p data-target="about.bitidAddress" class="text-truncate system-info"></p>
                     <p>XPUB Last 6 Digits.</p>
                     <p data-target="about.xpubAddress" class="text-truncate system-info"></p>
-                    <p>Old XPUB Last 6 Digits.</p>
-                    <p data-target="about.oldXpubAddress" class="text-truncate system-info"></p>
                     <p>iOS Device ?</p>
                     <p data-target="about.isIOS" class="system-info"></p>
                     <p>Android Persistance ?</p>
@@ -192,7 +190,7 @@
                 </div>
             </div>
 
-            <input id="fileChooser" type="file" accept="image/*" class="btn btn-bottom" style="bottom: 80px">
+            <input data-action="change->about#scanFromFile" type="file" accept="image/*" class="btn btn-bottom" style="bottom: 80px">
         </div>
 
     </main>
