@@ -85,18 +85,6 @@ function getCallBackURL(bitid) {
   return this.getSiteAddress(bitid) + this.parseURI(bitid).pathname;
 }
 
-/**function generateBITIDAddress(ecpair: bitcoin.ECPairInterface, site_uri) {
-
-    var xpriv = bip32.fromSeed(ecpair.privateKey)
-
-    const sha256URL = bitcoin.crypto.sha256(site_uri);
-    const sha32uri = sha256URL.readInt32LE(1);
-
-    const derived = xpriv.derivePath("m/0'/45342'/" + sha32uri + "/0");
-
-    return derived;
-}**/
-
 function generateSignatureMessage(ecpair: bitcoin.ECPairInterface, address) {
 
   const parsed = this.parseURI(address);
