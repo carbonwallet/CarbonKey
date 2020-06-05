@@ -29,8 +29,8 @@ export function tether(ecpair: bitcoin.ECPairInterface, parsed) {
     },
     body: formData
   }).then(function (responseText) {
-    console.log('Response from server ' + responseText);
-    snackbar.show({ text: 'Response from server ' + responseText, pos: 'bottom-center' })
+    console.log('Response from server ' + JSON.stringify(responseText))
+    snackbar.show({ text: JSON.stringify(responseText), pos: 'bottom-center' })
   }).catch(function (error) {
     snackbar.show({ text: 'Error ' + error, pos: 'bottom-center' })
   });
