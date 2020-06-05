@@ -1,5 +1,5 @@
 import { Controller } from "stimulus"
-import { getHDWallet } from './util'
+import { getHDWallet, processQRCode } from './util'
 
 interface SizedEvent {
   width: number;
@@ -36,6 +36,8 @@ export default class extends Controller {
 
         if (navigator.vibrate)
           navigator.vibrate(200);
+
+          processQRCode(resultData.result)
       }
     });
   }
