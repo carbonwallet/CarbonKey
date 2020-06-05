@@ -1,11 +1,6 @@
 import { Controller } from "stimulus"
 import { getHDWallet, processQRCode } from './util'
 
-interface SizedEvent {
-  width: number;
-  height: number;
-}
-
 export default class extends Controller {
 
   static targets = ['bitidAddress', 'xpubAddress', 'isIOS', 'isAndroidPersistant', 'isAdded']
@@ -41,10 +36,6 @@ export default class extends Controller {
       }
     });
   }
-
-  isSizedEvent(e: any): e is SizedEvent {
-    return (e && e.width !== undefined && e.height !== undefined);
-  } 
 
   scanFromFile(e : Event) {
 
