@@ -1,0 +1,23 @@
+version: '3.4'
+services:
+
+  carbonkey:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: development
+
+    
+    environment:
+      - GIT_USER=$GIT_USER
+      - GIT_EMAIL=$GIT_EMAIL
+    
+    volumes:
+      - ..:/carbonkey:cached
+      - ~/.ssh:/root/host-ssh:cached
+      
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
+
+    working_dir: /carbonkey
+    
