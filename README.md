@@ -35,7 +35,6 @@ The private key never leaves CarbonKey.
 
 To backup your CarbonKey write down the twelve word backup text on the backup page.
 
-
 # How does CarbonKey work? (More Technical)
 
 1. Registration and login are performed with the BitID protocol. https://github.com/bitid/bitid
